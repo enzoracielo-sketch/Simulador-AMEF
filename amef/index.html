@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard SEVA - AMEF & Semáforo 4.0</title>
+    <title>Dashboard SEVA - AMEF & CAPA 4.0</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -10,20 +10,16 @@
     
     <style>
         :root { --blue-dark: #0a192f; --seva-red: #c82333; --bg-gray: #f4f7f6; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-gray); margin: 0; padding: 15px; }
-        .header-ui { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 8px solid var(--seva-red); }
-        .main-grid { display: grid; grid-template-columns: 380px 1fr; gap: 15px; }
-        .panel { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 88vh; overflow-y: auto; }
-        label { display: block; font-weight: bold; margin-bottom: 2px; font-size: 0.75em; color: #444; }
-        input, select { width: 95%; padding: 7px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px; font-size: 0.85em; }
-        
-        /* Semáforo Visual */
-        .npr-dashboard { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 10px; border: 1px solid #dee2e6; }
-        .npr-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; margin-bottom: 8px; }
-        .status-dot { height: 15px; width: 15px; border-radius: 50%; display: inline-block; border: 1px solid #fff; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
-        
-        .btn-calc { background: var(--blue-dark); color: white; width: 100%; padding: 10px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
-        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 10px; margin-top: 8px; font-weight: bold; display: none; border: none; border-radius: 4px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-gray); margin: 0; padding: 20px; }
+        .header-ui { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-left: 8px solid var(--seva-red); }
+        .main-grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 0.8em; color: #555; }
+        input, select { width: 95%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-size: 0.9em; }
+        button { width: 100%; padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; margin-top: 10px; }
+        .btn-calc { background: var(--blue-dark); color: white; }
+        .btn-pdf { background: var(--seva-red); color: white; display: none; }
+        .capa-box { margin-top: 15px; padding: 12px; border-radius: 5px; font-size: 0.85em; border: 1px solid #ddd; }
         #chart-container { height: 550px; width: 100%; border-radius: 8px; overflow: hidden; }
     </style>
 </head>
@@ -32,11 +28,11 @@
     <div class="header-ui">
         <div>
             <h2 style="margin:0; color: var(--blue-dark);">SEVA METROLOGÍA</h2>
-            <small>Dashboard de Riesgos AMEF 4.0 | Ing. Fabián Durán</small>
+            <small>Gestión de Riesgos AMEF + Plan CAPA | Ing. Fabián Durán</small>
         </div>
-        <div style="text-align: right; font-size: 0.8em;">
-            <strong>MÉTODO: APRENDER-HACIENDO</strong><br>
-            <span>Gestión de Puntos Críticos</span>
+        <div style="text-align: right; font-size: 0.85em;">
+            <strong>METROLOGÍA 4.0</strong><br>
+            <span>Análisis Volumétrico de Riesgos</span>
         </div>
     </div>
 
@@ -44,59 +40,40 @@
         <div class="panel">
             <h3>Entradas de Riesgo</h3>
             <label>ID Sensor / Ubicación:</label>
-            <input type="text" id="sensor_id" value="S-AMEF-001">
-
+            <input type="text" id="sensor_id" value="S-CRIT-001">
+            
             <div style="display:flex; gap:5px;">
-                <div style="flex:1"><label>X(m):</label><input type="number" id="x_v" value="5"></div>
+                <div style="flex:1"><label>X(m):</label><input type="number" id="x_v" value="10"></div>
                 <div style="flex:1"><label>Y(m):</label><input type="number" id="y_v" value="1.5"></div>
-                <div style="flex:1"><label>Z(m):</label><input type="number" id="z_v" value="9.0"></div>
+                <div style="flex:1"><label>Z(m):</label><input type="number" id="z_v" value="9.5"></div>
             </div>
 
-            <hr>
-            <label>Riesgo Eléctrico:</label>
-            <select id="r_elec">
-                <option value="10">10-Sin Respaldo</option>
-                <option value="5">5-Con UPS</option>
-                <option value="1">1-Respaldo Total</option>
+            <label>Severidad (S):</label>
+            <select id="s_val">
+                <option value="10">10-Catastrófico (Muerte del Producto)</option>
+                <option value="7">7-Alto (Pérdida de Potencia)</option>
+                <option value="4">4-Moderado (Vida útil reducida)</option>
+                <option value="1">1-Bajo (Sin impacto)</option>
             </select>
 
-            <label>Personal / Capacitación:</label>
-            <select id="r_human">
-                <option value="10">10-Sin Capacitación</option>
-                <option value="5">5-Capacitado con Bitácora</option>
-                <option value="1">1-Automatización</option>
+            <label>Ocurrencia (O):</label>
+            <select id="o_val">
+                <option value="10">10-Frecuente (Puertas/Techo)</option>
+                <option value="5">5-Ocasional (Zonas de flujo)</option>
+                <option value="1">1-Remota (Centro del almacén)</option>
             </select>
 
-            <label>Integridad IoT (ALCOA+):</label>
-            <select id="r_iot">
-                <option value="10">10-Sin Redundancia de Datos</option>
-                <option value="1">1-Backfill y Cloud Sync</option>
+            <label>Detección (D):</label>
+            <select id="d_val">
+                <option value="10">10-Imposible (Sin registro)</option>
+                <option value="5">5-Baja (Muestreo manual)</option>
+                <option value="1">1-Alta (Monitoreo IoT Tiempo Real)</option>
             </select>
 
-            <button class="btn-calc" onclick="procesarTodo()">EVALUAR ESCENARIO</button>
+            <button class="btn-calc" onclick="ejecutarAnalisis()">CALCULAR NPR & CAPA</button>
+            <button class="btn-pdf" id="btn_pdf" onclick="descargarReporte()">EXPORTAR MATRIZ CAPA</button>
 
-            <div class="npr-dashboard">
-                <div class="npr-item">
-                    <span>Riesgo Térmico:</span>
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <span id="npr_t">0</span> <span id="dot_t" class="status-dot" style="background:#bbb;"></span>
-                    </span>
-                </div>
-                <div class="npr-item">
-                    <span>Riesgo Infraestructura:</span>
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <span id="npr_i">0</span> <span id="dot_i" class="status-dot" style="background:#bbb;"></span>
-                    </span>
-                </div>
-                <div class="npr-item" style="font-weight:bold; border-top: 1px solid #ccc; padding-top: 5px;">
-                    <span>RIESGO GLOBAL NPR:</span>
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <span id="npr_g">0</span> <span id="dot_g" class="status-dot" style="background:#bbb;"></span>
-                    </span>
-                </div>
-            </div>
-
-            <button class="btn-pdf" id="btn_pdf" onclick="descargarPDF()">DESCARGAR REPORTE CAPA</button>
+            <div id="capa_display" class="capa-box" style="display:none;"></div>
         </div>
 
         <div class="panel">
@@ -105,81 +82,98 @@
     </div>
 
     <script>
-        let nGlobal = 0, nTerm = 0, nInfra = 0, colorG = "#bbb";
+        let globalNPR = 0;
+        let globalCAPA = "";
 
-        function getColor(npr) {
-            if (npr >= 250) return "#28a745"; // Verde: Prioridad (Lo que buscamos detectar)
-            if (npr >= 100) return "#ffc107"; // Amarillo
-            return "#dc3545"; // Rojo
-        }
-
-        function procesarTodo() {
+        function ejecutarAnalisis() {
+            const s = parseInt(document.getElementById('s_val').value);
+            const o = parseInt(document.getElementById('o_val').value);
+            const d = parseInt(document.getElementById('d_val').value);
             const x = parseFloat(document.getElementById('x_v').value);
             const y = parseFloat(document.getElementById('y_v').value);
             const z = parseFloat(document.getElementById('z_v').value);
-            const rE = parseInt(document.getElementById('r_elec').value), rH = parseInt(document.getElementById('r_human').value), rI = parseInt(document.getElementById('r_iot').value);
 
-            nTerm = ((z >= 8.5 ? 10 : 3) * (y <= 2.5 ? 10 : 3) * 5);
-            nInfra = rE * rH * rI;
-            nGlobal = Math.round((nTerm + nInfra) / 2);
+            globalNPR = s * o * d;
+            const capaDiv = document.getElementById('capa_display');
+            capaDiv.style.display = "block";
 
-            // Actualizar Semáforos
-            document.getElementById('npr_t').innerText = nTerm;
-            document.getElementById('dot_t').style.background = getColor(nTerm);
-            document.getElementById('npr_i').innerText = nInfra;
-            document.getElementById('dot_i').style.background = getColor(nInfra);
-            document.getElementById('npr_g').innerText = nGlobal;
-            colorG = getColor(nGlobal);
-            document.getElementById('dot_g').style.background = colorG;
+            // Lógica de Acciones Correctivas (CAPA)
+            if (globalNPR >= 300) {
+                globalCAPA = "ACCIÓN: Instalación obligatoria de sensor con alarma SMS/Email, calibración semestral y redundancia de datos.";
+                capaDiv.style.background = "#fff3f3"; capaDiv.style.color = "#c82333";
+            } else if (globalNPR >= 100) {
+                globalCAPA = "ACCIÓN: Monitoreo periódico. Se recomienda registro digital ALCOA+ y verificación de sellos en puertas.";
+                capaDiv.style.background = "#fffceb"; capaDiv.style.color = "#856404";
+            } else {
+                globalCAPA = "ACCIÓN: No se requieren controles adicionales. Punto de baja variabilidad.";
+                capaDiv.style.background = "#f0fff4"; capaDiv.style.color = "#28a745";
+            }
 
+            capaDiv.innerHTML = `<strong>NPR: ${globalNPR}</strong><br>${globalCAPA}`;
             document.getElementById('btn_pdf').style.display = "block";
-            render3D(x, y, z, colorG);
+            
+            const sColor = (globalNPR >= 300) ? "#28a745" : (globalNPR >= 100 ? "#ffc107" : "#dc3545");
+            render3D(x, y, z, sColor);
+        }
+
+        function getRack(x) {
+            return { type: 'scatter3d', mode: 'lines', x: [x, x+2.5, x+2.5, x, x, x, x+2.5, x+2.5, x, x], y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2], z: [0, 0, 0, 0, 0, 8, 8, 8, 8, 8], line: { color: '#ccc', width: 1 }, showlegend: false };
         }
 
         function render3D(x, y, z, color) {
             const walls = { type: 'scatter3d', mode: 'lines', x: [0, 20, 20, 0, 0, 0, 20, 20, 0, 0, 20, 20, 20, 20, 0, 0], y: [0, 0, 30, 30, 0, 0, 0, 30, 30, 0, 0, 0, 30, 30, 30, 30], z: [0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 0, 0, 10, 10, 0], line: { color: '#2c3e50', width: 2 } };
-            const racks = [1, 4, 7, 10, 13, 16].map(px => ({ type: 'scatter3d', mode: 'lines', x: [px, px+2, px+2, px, px, px, px+2, px+2, px, px], y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2], z: [0, 0, 0, 0, 0, 8, 8, 8, 8, 8], line: { color: '#ccc', width: 1 }, showlegend: false }));
-            const sensor = { x:[x], y:[y], z:[z], mode:'markers+text', type:'scatter3d', marker:{size:14, color:color, symbol:'diamond', line:{color:'black', width:1}}, text:[document.getElementById('sensor_id').value], textposition:'top center' };
-            Plotly.react('chart', [walls, ...racks, sensor], { scene: {camera:{eye:{x:1.6, y:1.6, z:1.3}}}, margin:{l:0, r:0, b:0, t:0}, showlegend:false });
+            const racks = [1, 4, 7, 10, 13, 16].map(p => getRack(p));
+            const sensor = { x: [x], y: [y], z: [z], mode: 'markers+text', type: 'scatter3d', marker: { size: 14, color: color, symbol: 'diamond', line: {color: 'black', width: 1} }, text: [document.getElementById('sensor_id').value], textposition: 'top center' };
+            Plotly.react('chart', [walls, ...racks, sensor], { scene: { camera: {eye: {x:1.6, y:1.6, z:1.3}}}, margin: {l:0, r:0, b:0, t:0}, showlegend: false });
         }
 
-        async function descargarPDF() {
+        async function descargarReporte() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
-            const sId = document.getElementById('sensor_id').value;
+            const sensorId = document.getElementById('sensor_id').value;
 
-            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 297, 30, 'F');
+            // Header Negro/Azul Profesional
+            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 297, 35, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(18);
-            doc.text("REPORTE TÉCNICO AMEF SEVA - METROLOGÍA 4.0", 148, 12, {align: 'center'});
-            
+            doc.text("MATRIZ AMEF & PLAN DE ACCIONES (CAPA) - SEVA", 148, 15, {align: 'center'});
+            doc.setFontSize(10); doc.text(`UBICACIÓN EVALUADA: ${sensorId} | CUMPLIMIENTO METROLOGÍA 4.0`, 148, 25, {align: 'center'});
+
+            // Tabla AMEF
             doc.autoTable({
-                startY: 35,
-                head: [['FACTOR', 'NPR', 'RIESGO', 'ACCIÓN RECOMENDADA']],
-                body: [
-                    ['TÉRMICO (XYZ)', nTerm, nTerm >= 250 ? 'ALTO' : 'BAJO', 'Monitoreo de puntos críticos'],
-                    ['INFRAESTRUCTURA', nInfra, nInfra >= 250 ? 'ALTO' : 'BAJO', 'Asegurar UPS e Integridad ALCOA+'],
-                    ['GLOBAL', nGlobal, nGlobal >= 250 ? 'PRIORITARIO' : 'CONTROLADO', nGlobal >= 250 ? 'Instalación prioritaria IoT' : 'Seguimiento estándar']
-                ],
-                headStyles: { fillColor: [10, 25, 47] }
+                startY: 45,
+                head: [['FACTOR', 'Severidad', 'Ocurrencia', 'Detección', 'NPR', 'ESTADO DE RIESGO']],
+                body: [['Evaluación Térmica', document.getElementById('s_val').value, document.getElementById('o_val').value, document.getElementById('d_val').value, globalNPR, globalNPR >= 300 ? 'CRÍTICO' : 'CONTROLADO']],
+                headStyles: { fillColor: [10, 25, 47] },
+                columnStyles: { 4: { fontStyle: 'bold', fillColor: globalNPR >= 300 ? [40, 167, 69] : [200, 35, 51], textColor: 255 } }
             });
 
+            // Acción Correctiva Destacada
+            doc.setDrawColor(200, 35, 51); doc.setLineWidth(1);
+            doc.rect(15, 80, 267, 20);
+            doc.setTextColor(200, 35, 51); doc.setFontSize(11); doc.setFont("helvetica", "bold");
+            doc.text("PLAN DE ACCIÓN RECOMENDADO (CAPA):", 20, 87);
+            doc.setTextColor(0); doc.setFont("helvetica", "normal");
+            doc.text(doc.splitTextToSize(globalCAPA, 250), 20, 95);
+
+            // Gráfico 3D
             await new Promise(r => setTimeout(r, 600));
             const canvas = await html2canvas(document.getElementById('chart-container'), { scale: 2 });
-            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 15, 100, 135, 85);
+            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 15, 110, 130, 80);
 
-            doc.setTextColor(10, 25, 47); doc.setFontSize(12);
-            doc.text("CONCLUSIÓN TÉCNICA:", 160, 110);
+            // Resumen Ejecutivo
+            doc.text("JUSTIFICACIÓN TÉCNICA:", 155, 120);
             doc.setFontSize(9);
-            const text = `Basado en el análisis de riesgo AMEF, el sensor ${sId} en las coordenadas (X:${document.getElementById('x_v').value}, Y:${document.getElementById('y_v').value}, Z:${document.getElementById('z_v').value}) tiene un impacto global de ${nGlobal} puntos. Este valor justifica técnicamente la estrategia de monitoreo continuo.`;
-            doc.text(doc.splitTextToSize(text, 120), 160, 120);
+            const just = `El análisis NPR de ${globalNPR} puntos indica que la zona evaluada en las coordenadas (X:${document.getElementById('x_v').value}, Y:${document.getElementById('y_v').value}, Z:${document.getElementById('z_v').value}) requiere una estrategia de control basada en datos íntegros. Según el Reporte 961 de la OMS, este punto es fundamental para la validación del sistema de gestión de temperatura.`;
+            doc.text(doc.splitTextToSize(just, 120), 155, 130);
 
+            // Footer
             doc.setFillColor(200, 35, 51); doc.rect(0, 195, 297, 15, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.text("SEVA Metrología | Director: Ing. Fabián Durán | México 2026", 148, 205, {align: 'center'});
+            doc.text("Confidencial - SEVA Metrología | Director: Ing. Fabián Durán Valencia | Aprender-Haciendo", 148, 205, {align: 'center'});
 
-            doc.save(`AMEF_SEVA_FINAL_${sId}.pdf`);
+            doc.save(`AMEF_CAPA_SEVA_${sensorId}.pdf`);
         }
-        procesarTodo();
+        render3D(0,0,0,"#bbb");
     </script>
 </body>
 </html>
