@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVAMETROLOGÍA - Auditoría IQ de Alta Precisión</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --seva-red: #c82333; --blue-dark: #0a192f; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); margin: 0; padding: 10px; overflow: hidden; }
+        .header-ui { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-left: 8px solid var(--seva-red); }
+        .main-container { max-width: 1450px; margin: auto; display: grid; grid-template-columns: 1fr 500px; gap: 15px; height: 85vh; }
+        .panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        h3 { color: var(--blue-dark); border-bottom: 2px solid var(--seva-red); padding-bottom: 5px; margin: 0 0 10px 0; font-size: 1.1em; }
+        
+        .table-wrapper { flex: 1; overflow-y: auto; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75em; }
+        th { background: var(--blue-dark); color: white; padding: 10px; text-align: left; position: sticky; top: 0; z-index: 10; }
+        td { padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+        tr:hover { background-color: #f9f9f9; }
+        .selected-row { background-color: #fff0f0 !important; font-weight: bold; border-left: 4px solid var(--seva-red); }
+
+        /* Esquema SVG Detallado */
+        .svg-container { position: relative; width: 100%; height: 450px; background: #fdfdfd; border-radius: 8px; border: 2px solid var(--blue-dark); }
+        #lupa { position: absolute; width: 45px; height: 45px; border: 3px solid var(--seva-red); border-radius: 50%; background: rgba(200,35,51,0.15); pointer-events: none; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: none; transform: translate(-50%, -50%); z-index: 100; box-shadow: 0 0 10px rgba(200,35,51,0.5); }
+
+        .img-caption { background: var(--blue-dark); color: white; padding: 12px; font-size: 0.8em; border-radius: 0 0 8px 8px; min-height: 80px; line-height: 1.4; }
+        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 12px; margin-top: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
+        .status-select { font-size: 0.8em; padding: 2px; border-radius: 3px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+    <div class="header-ui">
+        <div>
+            <h1 style="margin:0; color: var(--blue-dark); font-size: 1.3rem;">SEVAMETROLOGÍA</h1>
+            <small>"aprender haciendo" | Auditoría IQ de Alta Precisión con Esquema Detallado</small>
+        </div>
+        <div style="text-align: right; font-size: 0.75em;"><strong>ESQUEMA AVANZADO</strong><br>V.2026.06</div>
+    </div>
+
+    <div class="main-container">
+        <div class="panel">
+            <h3>Protocolo URS vs Instalación Física (20 Puntos)</h3>
+            <div class="table-wrapper">
+                <table id="ursTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 20px;">#</th>
+                            <th>Requisito Metrológico / Técnico</th>
+                            <th style="width: 90px;">Estado IQ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel" style="padding:0; background:transparent; box-shadow:none;">
+            <div class="svg-container" id="svgBox">
+                <div id="lupa"></div>
+                <svg viewBox="0 0 400 400" width="100%" height="100%">
+                    <rect x="80" y="30" width="240" height="330" fill="#ecf0f1" stroke="#2c3e50" stroke-width="4"/>
+                    <rect x="90" y="45" width="220" height="305" fill="#ffffff" stroke="#34495e" stroke-width="2"/>
+                    <rect x="295" y="170" width="10" height="60" fill="#7f8c8d" rx="2"/>
+                    <rect x="110" y="65" width="180" height="265" fill="#d1f2eb" opacity="0.5" stroke="#16a085"/>
+                    <rect x="230" y="60" width="60" height="45" fill="#2980b9" stroke="#2c3e50"/>
+                    <text x="260" y="87" fill="white" font-size="10" text-anchor="middle">HMI</text>
+                    <rect x="180" y="10" width="40" height="20" fill="#2c3e50" rx="5"/>
+                    <circle cx="190" cy="20" r="5" fill="#e74c3c"/>
+                    <circle cx="210" cy="20" r="5" fill="#2ecc71"/>
+                    <circle cx="200" cy="90" r="25" fill="none" stroke="#7f8c8d" stroke-dasharray="4,4"/>
+                    <line x1="200" y1="65" x2="200" y2="115" stroke="#7f8c8d"/>
+                    <line x1="175" y1="90" x2="225" y2="90" stroke="#7f8c8d"/>
+                    <circle cx="150" cy="120" r="5" fill="#f1c40f"/>
+                    <circle cx="250" cy="120" r="5" fill="#f1c40f"/>
+                    <line x1="100" y1="180" x2="300" y2="180" stroke="#95a5a6" stroke-width="2"/>
+                    <line x1="100" y1="240" x2="300" y2="240" stroke="#95a5a6" stroke-width="2"/>
+                    <line x1="100" y1="300" x2="300" y2="300" stroke="#95a5a6" stroke-width="2"/>
+                    <rect x="80" y="335" width="240" height="25" fill="#95a5a6"/>
+                    <path d="M80 345 L60 360" stroke="#2980b9" stroke-width="3" fill="none"/>
+                    <circle cx="60" cy="360" r="4" fill="#2980b9"/>
+                    <circle cx="110" cy="375" r="10" fill="#2c3e50"/>
+                    <rect x="100" y="365" width="5" height="10" fill="red"/>
+                    <circle cx="290" cy="375" r="10" fill="#2c3e50"/>
+                    <rect x="295" y="365" width="5" height="10" fill="red"/>
+                </svg>
+            </div>
+            <div class="img-caption" id="imgDesc">Seleccione un requisito para verificar su ubicación técnica detallada.</div>
+            <button class="btn-pdf" onclick="exportarPDF()">DESCARGAR DICTAMEN IQ</button>
+        </div>
+    </div>
+
+    <script>
+        const requisitos = [
+            { t: "Placa de Identificación (Modelo/Serie)", d: "Inspeccione la placa de aluminio en el chasis; los datos deben ser legibles y coincidir con el expediente.", x: 310, y: 160 },
+            { t: "Material de Cámara (Acero Inoxidable 316L)", d: "Verifique que las paredes internas no presenten corrosión ni porosidad en soldaduras.", x: 150, y: 200 },
+            { t: "Controlador Digital HMI / PLC", d: "Pruebe la sensibilidad táctil y verifique el menú de configuración de seguridad.", x: 260, y: 80 },
+            { t: "Ventilador de Convección Forzada", d: "Asegure que el motor gire en el sentido correcto y sin vibraciones excesivas.", x: 200, y: 90 },
+            { t: "Sensor de Temperatura Principal", d: "Verifique la posición física del PT100 y su trazabilidad en el certificado.", x: 150, y: 120 },
+            { t: "Sensor de Humedad Capacitivo", d: "Inspeccione que el sensor esté libre de depósitos de sales o condensación.", x: 250, y: 120 },
+            { t: "Bandejas de Carga (Capacidad)", d: "Confirme que las rejillas son de acero inox y permiten el flujo de aire vertical.", x: 200, y: 240 },
+            { t: "Empaque Magnético de Puerta", d: "Realice la prueba de la hoja de papel en todo el perímetro para asegurar hermeticidad.", x: 90, y: 200 },
+            { t: "Puerta de Vidrio Interior", d: "Verifique la integridad del vidrio templado y su sello para observación sin pérdida térmica.", x: 200, y: 190 },
+            { t: "Ruedas con Freno de Seguridad", d: "Confirme que el equipo está nivelado y los frenos bloquean el desplazamiento.", x: 110, y: 375 },
+            { t: "Unidad de Refrigeración (Compresor)", d: "Revise que el gas refrigerante sea ecológico (R134a/R404a) según etiqueta.", x: 200, y: 345 },
+            { t: "Puerto de Acceso Lateral", d: "Verifique el tapón de silicona de 2'' para la introducción de cables de validación.", x: 80, y: 200 },
+            { t: "Torreta de Alarma Visual/Auditiva", d: "Simule una desviación de temperatura para confirmar la activación de la luz roja.", x: 200, y: 20 },
+            { t: "Manuales de Operación y Partes", d: "Verifique la presencia física del manual original y diagramas neumáticos.", x: 100, y: 40 },
+            { t: "Conexión a Tierra Física", d: "Mida continuidad entre el chasis metálico y la terminal de tierra eléctrica.", x: 290, y: 375 },
+            { t: "Sistema de Drenaje (Sifón)", d: "Verifique que la salida de condensados tenga una trampa de aire para evitar olores.", x: 60, y: 360 },
+            { t: "Interruptor de Seguridad de Puerta", d: "El ventilador y la calefacción deben cortarse al abrir la puerta.", x: 310, y: 50 },
+            { t: "Filtro de Entrada de Aire", d: "Inspeccione la limpieza del filtro del condensador para evitar sobrecalentamiento.", x: 200, y: 335 },
+            { t: "Niveles de Usuario (ALCOA+)", d: "Confirme en el software la existencia de perfiles Administrador y Operador.", x: 260, y: 65 },
+            { t: "Termostato de Seguridad Mecánico", d: "Verifique el ajuste del límite superior independiente del PLC principal.", x: 200, y: 40 }
+        ];
+
+        function init() {
+            const body = document.getElementById('tableBody');
+            requisitos.forEach((req, i) => {
+                const tr = document.createElement('tr');
+                tr.onclick = () => {
+                    document.querySelectorAll('tr').forEach(r => r.classList.remove('selected-row'));
+                    tr.classList.add('selected-row');
+                    moverLupa(req.x, req.y, req.d);
+                };
+                tr.innerHTML = `<td>${i+1}</td><td>${req.t}</td><td><select class="status-select"><option>Cumple</option><option>Fallo</option><option>N/A</option></select></td>`;
+                body.appendChild(tr);
+            });
+            moverLupa(requisitos[0].x, requisitos[0].y, requisitos[0].d);
+        }
+
+        function moverLupa(x, y, desc) {
+            const lupa = document.getElementById('lupa');
+            const svgBox = document.getElementById('svgBox');
+            const rect = svgBox.getBoundingClientRect();
+            lupa.style.display = "block";
+            lupa.style.left = (x / 400) * rect.width + "px";
+            lupa.style.top = (y / 400) * rect.height + "px";
+            document.getElementById('imgDesc').innerHTML = `<b>INSTRUCCIÓN DE AUDITORÍA:</b> ${desc}`;
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255); doc.setFontSize(16); doc.text("REPORTE DE AUDITORÍA IQ - SEVAMETROLOGÍA", 10, 20);
+            doc.autoTable({ html: '#ursTable', startY: 35, headStyles: {fillColor:[10,25,47]} });
+            doc.save("Reporte_IQ_SEVAM_Avanzado.pdf");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
