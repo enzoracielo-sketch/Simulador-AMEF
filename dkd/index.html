@@ -2,24 +2,23 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SEVA - DKD-R 5-7:2025 (Volúmenes Críticos)</title>
+    <title>SEVA - Caracterización DKD-R 5-7 PRO</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     
     <style>
         :root { --blue-dark: #0a192f; --seva-red: #c82333; --bg-gray: #f4f7f6; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-gray); margin: 0; padding: 15px; }
         .header-ui { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 8px solid var(--seva-red); }
         .main-grid { display: grid; grid-template-columns: 380px 1fr; gap: 15px; }
-        .panel { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        label { display: block; font-weight: bold; margin-bottom: 2px; font-size: 0.75em; color: #444; }
-        input, select { width: 95%; padding: 7px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-size: 0.85em; }
+        .panel { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
+        label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 0.75em; color: #444; }
+        input, select { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-size: 0.85em; }
+        .vol-info { background: #e7f3ff; color: #004085; padding: 12px; border-radius: 6px; font-size: 0.85em; margin-bottom: 15px; border-left: 4px solid #007bff; }
         .btn-calc { background: var(--blue-dark); color: white; width: 100%; padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
-        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 10px; margin-top: 8px; font-weight: bold; display: none; border: none; border-radius: 4px; }
-        .vol-info { background: #fff3f3; color: #c82333; padding: 10px; border-radius: 5px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; border: 1px solid var(--seva-red); }
-        #chart-container { height: 550px; width: 100%; border-radius: 8px; }
+        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 12px; margin-top: 10px; font-weight: bold; display: none; border: none; border-radius: 4px; }
+        #chart { height: 550px; width: 100%; border-radius: 8px; background: white; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -27,39 +26,34 @@
     <div class="header-ui">
         <div>
             <h2 style="margin:0; color: var(--blue-dark);">SEVA METROLOGÍA</h2>
-            <small>DKD-R 5-7:2025 | Caracterización de Volúmenes Reducidos</small>
+            <small>Protocolo DKD-R 5-7:2025 | Caracterización de Cámaras</small>
         </div>
         <div style="text-align: right; font-size: 0.8em;">
-            <strong>MÉTODO SEVA</strong><br>
-            <span>Ing. Fabián Durán Valencia</span>
+            <strong>MÉTODO: APRENDER-HACIENDO</strong><br><span>Ing. Fabián Durán Valencia</span>
         </div>
     </div>
 
     <div class="main-grid">
         <div class="panel">
-            <h3>Configuración de Cámara</h3>
+            <h3>Configuración de Volumen</h3>
             
-            <label>Capacidad de la Cámara:</label>
-            <select id="cam_preset" onchange="ajustarVolumen()">
-                <option value="0.05">Incubadora Pequeña (50 Litros)</option>
-                <option value="0.2">Cámara Mediana (200 Litros)</option>
-                <option value="1.0">Cámara Grande (1000 Litros / 1m³)</option>
+            <label>Capacidad Nominal:</label>
+            <select id="cam_preset" onchange="actualizarInterfaz()">
+                <option value="0.05">Incubadora Pequeña (50 L)</option>
+                <option value="0.5">Cámara Mediana (500 L)</option>
+                <option value="2.0">Cámara Grande (2000 L)</option>
                 <option value="custom">Dimensiones Manuales</option>
             </select>
 
-            <div id="manual_dims" style="display:none; gap:5px;">
-                <div style="flex:1"><label>X (m):</label><input type="number" id="dx" value="0.4"></div>
-                <div style="flex:1"><label>Y (m):</label><input type="number" id="dy" value="0.35"></div>
-                <div style="flex:1"><label>Z (m):</label><input type="number" id="dz" value="0.35"></div>
-            </div>
-
-            <div id="vol_alert" class="vol-info" style="display:none;">
-                ⚠️ VOLUMEN < 70L: Se habilita configuración de 3 sensores.
+            <div id="manual_inputs" style="display:none; gap:5px;">
+                <div style="flex:1"><label>X (m):</label><input type="number" id="mx" value="0.4"></div>
+                <div style="flex:1"><label>Y (m):</label><input type="number" id="my" value="0.35"></div>
+                <div style="flex:1"><label>Z (m):</label><input type="number" id="mz" value="0.35"></div>
             </div>
 
             <label>Esquema de Sensores:</label>
-            <select id="sensor_scheme">
-                <option value="3" id="opt_3" disabled>3 Puntos (Solo < 70L)</option>
+            <select id="scheme">
+                <option value="3" id="opt3">3 Puntos (Solo < 70L)</option>
                 <option value="9" selected>9 Puntos (Esquinas + Centro)</option>
                 <option value="27">27 Puntos (Exhaustivo)</option>
             </select>
@@ -67,60 +61,53 @@
             <label>Distancia a Paredes (mm):</label>
             <input type="number" id="w_dist" value="50">
 
-            <button class="btn-calc" onclick="calcularMapeo()">CALCULAR VOLUMEN ÚTIL</button>
-            <button class="btn-pdf" id="btn_pdf" onclick="exportarPDF()">DESCARGAR PROTOCOLO</button>
+            <div class="vol-info" id="v_result">
+                Calculando volumen útil...
+            </div>
+
+            <button class="btn-calc" onclick="generarMapeo()">CONFIGURAR MAPEO</button>
+            <button class="btn-pdf" id="btn_pdf" onclick="descargarProtocolo()">EXPORTAR PROTOCOLO DKD</button>
         </div>
 
         <div class="panel">
-            <div id="chart-container"><div id="chart" style="height:100%"></div></div>
+            <div id="chart"></div>
         </div>
     </div>
 
     <script>
         let puntos = [], conf = {};
 
-        function ajustarVolumen() {
+        function actualizarInterfaz() {
             const v = document.getElementById('cam_preset').value;
-            const manual = document.getElementById('manual_dims');
-            const alertBox = document.getElementById('vol_alert');
-            const opt3 = document.getElementById('opt_3');
-
-            if(v === 'custom') {
-                manual.style.display = 'flex';
-            } else {
+            const manual = document.getElementById('manual_inputs');
+            if(v === 'custom') manual.style.display = 'flex';
+            else {
                 manual.style.display = 'none';
-                if(v == '0.05') { document.getElementById('dx').value = 0.4; document.getElementById('dy').value = 0.35; document.getElementById('dz').value = 0.35; }
-                if(v == '0.2') { document.getElementById('dx').value = 0.6; document.getElementById('dy').value = 0.6; document.getElementById('dz').value = 0.55; }
-                if(v == '1.0') { document.getElementById('dx').value = 1.0; document.getElementById('dy').value = 1.0; document.getElementById('dz').value = 1.0; }
+                if(v == '0.05') { document.getElementById('mx').value = 0.4; document.getElementById('my').value = 0.35; document.getElementById('mz').value = 0.35; }
+                if(v == '0.5') { document.getElementById('mx').value = 0.8; document.getElementById('my').value = 0.8; document.getElementById('mz').value = 0.8; }
+                if(v == '2.0') { document.getElementById('mx').value = 1.2; document.getElementById('my').value = 1.2; document.getElementById('mz').value = 1.4; }
             }
-
-            const totalLiters = document.getElementById('dx').value * document.getElementById('dy').value * document.getElementById('dz').value * 1000;
-            if(totalLiters < 70) {
-                alertBox.style.display = 'block';
-                opt3.disabled = false;
-            } else {
-                alertBox.style.display = 'none';
-                opt3.disabled = true;
-                if(document.getElementById('sensor_scheme').value == "3") document.getElementById('sensor_scheme').value = "9";
-            }
+            
+            const litros = document.getElementById('mx').value * document.getElementById('my').value * document.getElementById('mz').value * 1000;
+            document.getElementById('opt3').disabled = litros >= 70;
+            if(litros >= 70 && document.getElementById('scheme').value == "3") document.getElementById('scheme').value = "9";
         }
 
-        function calcularMapeo() {
-            const x = parseFloat(document.getElementById('dx').value);
-            const y = parseFloat(document.getElementById('dy').value);
-            const z = parseFloat(document.getElementById('dz').value);
+        function generarMapeo() {
+            const x = parseFloat(document.getElementById('mx').value);
+            const y = parseFloat(document.getElementById('my').value);
+            const z = parseFloat(document.getElementById('mz').value);
             const d = parseFloat(document.getElementById('w_dist').value) / 1000;
-            const s = document.getElementById('sensor_scheme').value;
+            const s = document.getElementById('scheme').value;
+
+            const vUtil = (x - 2*d) * (y - 2*d) * (z - 2*d) * 1000;
+            document.getElementById('v_result').innerHTML = `<b>Volumen Total:</b> ${(x*y*z*1000).toFixed(1)} L<br><b>Volumen Útil:</b> ${vUtil.toFixed(1)} L`;
             
+            conf = {x, y, z, d, s, vUtil};
             puntos = [];
-            const volUtil = (x - 2*d) * (y - 2*d) * (z - 2*d);
-            conf = {x, y, z, d, s, volUtil: volUtil.toFixed(4)};
 
             if(s == "3") {
-                // Configuración DKD para < 70L: Diagonal espacial (Esq Inferior, Centro, Esq Superior opuesta)
-                puntos.push({x: d, y: d, z: d});
-                puntos.push({x: x/2, y: y/2, z: z/2});
-                puntos.push({x: x-d, y: y-d, z: z-d});
+                puntos = [{x:d, y:d, z:d}, {x:x/2, y:y/2, z:z/2}, {x:x-d, y:y-d, z:z-d}];
             } else if(s == "9") {
                 [d, x-d].forEach(ix => [d, y-d].forEach(iy => [d, z-d].forEach(iz => puntos.push({x:ix, y:iy, z:iz}))));
                 puntos.push({x: x/2, y: y/2, z: z/2});
@@ -128,50 +115,60 @@
                 [d, x/2, x-d].forEach(ix => [d, y/2, y-d].forEach(iy => [d, z/2, z-d].forEach(iz => puntos.push({x:ix, y:iy, z:iz}))));
             }
 
-            document.getElementById('btn_pdf').style.display = 'block';
-            render(x, y, z, puntos);
+            document.getElementById('btn_pdf').style.display = "block";
+            render3D(x, y, z, puntos);
         }
 
-        function render(x, y, z, p) {
-            const camara = { type:'scatter3d', mode:'lines', x:[0,x,x,0,0,0,x,x,0,0,x,x,x,x,0,0], y:[0,0,y,y,0,0,0,y,y,0,0,0,y,y,y,y], z:[0,0,0,0,0,z,z,z,z,z,z,0,0,z,z,0], line:{color:'#0a192f', width:3} };
-            const sensores = { x:p.map(i=>i.x), y:p.map(i=>i.y), z:p.map(i=>i.z), mode:'markers', type:'scatter3d', marker:{size:7, color:'#c82333'} };
-            Plotly.react('chart', [camara, sensores], { scene:{aspectmode:'data'}, margin:{l:0, r:0, b:0, t:0} });
+        function render3D(x, y, z, p) {
+            const camara = { type:'scatter3d', mode:'lines', x:[0,x,x,0,0,0,x,x,0,0,x,x,x,x,0,0], y:[0,0,y,y,0,0,0,y,y,0,0,0,y,y,y,y], z:[0,0,0,0,0,z,z,z,z,z,z,0,0,z,z,0], line:{color:'#0a192f', width:4} };
+            const sensores = { x:p.map(i=>i.x), y:p.map(i=>i.y), z:p.map(i=>i.z), mode:'markers', type:'scatter3d', marker:{size:6, color:'#c82333'} };
+            Plotly.newPlot('chart', [camara, sensores], { 
+                scene:{ aspectmode:'data', camera:{eye:{x:1.5, y:1.5, z:1.5}} }, 
+                margin:{l:0, r:0, b:0, t:0}, paper_bgcolor:'white' 
+            }, { preserveDrawingBuffer: true });
         }
 
-        async function exportarPDF() {
+        async function descargarProtocolo() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            
+            const btn = document.getElementById('btn_pdf');
+            btn.innerText = "CAPTURANDO IMAGEN..."; btn.disabled = true;
+
+            const imgData = await Plotly.toImage('chart', { format: 'png', width: 800, height: 600 });
+
             doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 35, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(16);
-            doc.text("PROTOCOLO DE CARACTERIZACIÓN (DKD-R 5-7:2025)", 105, 15, {align:'center'});
-            doc.setFontSize(10); doc.text("SEVA METROLOGÍA | VOLÚMENES MENORES A 70 LITROS", 105, 25, {align:'center'});
+            doc.text("PROTOCOLO DE CARACTERIZACIÓN DKD-R 5-7", 105, 15, {align:'center'});
+            doc.setFontSize(10); doc.text("SEVA METROLOGÍA | CUMPLIMIENTO NORMATIVO 2025", 105, 25, {align:'center'});
 
             doc.autoTable({
                 startY: 40,
-                head: [['Parámetro Crítico', 'Resultado']],
+                head: [['PARÁMETRO', 'RESULTADO']],
                 body: [
-                    ['Volumen Geométrico Total', `${(conf.x * conf.y * conf.z * 1000).toFixed(2)} Litros`],
-                    ['Volumen Útil de Carga', `${(conf.volUtil * 1000).toFixed(2)} Litros`],
-                    ['Configuración de Sensores', `${conf.s} Puntos (Normativo)`],
-                    ['Distancia de Seguridad (Paredes)', `${conf.d * 1000} mm`]
+                    ['Volumen Geométrico Total', `${(conf.x * conf.y * conf.z * 1000).toFixed(1)} Litros`],
+                    ['Volumen Útil (Carga Real)', `${conf.vUtil.toFixed(1)} Litros`],
+                    ['Esquema de Sensores', `${conf.s} Puntos`],
+                    ['Distancia de Paredes', `${conf.d * 1000} mm`]
                 ],
                 headStyles: { fillColor: [10, 25, 47] }
             });
 
-            await new Promise(r => setTimeout(r, 600));
-            const canvas = await html2canvas(document.getElementById('chart-container'), {scale: 2});
-            doc.addImage(canvas.toDataURL('image/png'), 'PNG', 15, 100, 180, 95);
+            doc.addImage(imgData, 'PNG', 15, 100, 180, 110);
 
-            doc.setTextColor(200, 35, 51); doc.setFontSize(11);
-            doc.text("NOTA DE CUMPLIMIENTO:", 15, 210);
+            doc.setTextColor(200, 35, 51); doc.setFontSize(11); doc.text("JUSTIFICACIÓN TÉCNICA:", 15, 220);
             doc.setTextColor(0); doc.setFontSize(9);
-            const nota = `Para cámaras con capacidad inferior a 70 litros, la directriz DKD-R 5-7 permite una configuración de 3 sensores distribuidos en la diagonal espacial principal para determinar estabilidad y homogeneidad, optimizando recursos sin comprometer la integridad metrológica.`;
-            doc.text(doc.splitTextToSize(nota, 180), 15, 218);
+            const nota = `La distribución de los ${conf.s} sensores sigue estrictamente los gradientes definidos en la DKD-R 5-7. Este protocolo asegura la determinación precisa de la homogeneidad y estabilidad dentro del volumen útil definido.`;
+            doc.text(doc.splitTextToSize(nota, 180), 15, 228);
 
-            doc.save("Protocolo_SEVA_DKD_70L.pdf");
+            doc.setFillColor(200, 35, 51); doc.rect(0, 280, 210, 17, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text("SEVA Metrología | Director: Ing. Fabián Durán Valencia | México 2026", 105, 290, {align: 'center'});
+
+            doc.save("Protocolo_DKD_SEVA_PRO.pdf");
+            btn.innerText = "EXPORTAR PROTOCOLO DKD"; btn.disabled = false;
         }
-        ajustarVolumen();
+
+        actualizarInterfaz();
     </script>
 </body>
 </html>
