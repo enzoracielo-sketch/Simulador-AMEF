@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVA - Simulador de Incertidumbre Volumétrica</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root { --blue-dark: #0a192f; --seva-red: #c82333; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-gray); margin: 0; padding: 15px; }
+        .header-ui { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 8px solid var(--seva-red); }
+        .main-grid { display: grid; grid-template-columns: 400px 1fr; gap: 15px; }
+        .panel { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h3 { margin-top: 0; color: var(--blue-dark); border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; }
+        label { display: block; font-weight: bold; margin-bottom: 2px; font-size: 0.75em; color: #444; }
+        input { width: 92%; padding: 7px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-size: 0.85em; }
+        .result-box { background: var(--blue-dark); color: white; padding: 15px; border-radius: 6px; text-align: center; margin-top: 10px; }
+        .result-box h2 { margin: 5px 0; color: #00ffcc; }
+        .btn-calc { background: var(--blue-dark); color: white; width: 100%; padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
+        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 10px; margin-top: 8px; font-weight: bold; display: none; border: none; border-radius: 4px; }
+        #chart { height: 400px; width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="header-ui">
+        <div>
+            <h2 style="margin:0; color: var(--blue-dark);">SEVA METROLOGÍA</h2>
+            <small>Cálculo de Incertidumbre Expandida (GUM) | Ing. Fabián Durán</small>
+        </div>
+        <div style="text-align: right; font-size: 0.8em;">
+            <strong>MÉTODO: APRENDER-HACIENDO</strong><br>
+            <span>Trazabilidad y Confianza</span>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div class="panel">
+            <h3>Componentes de Incertidumbre</h3>
+            
+            <label>Incertidumbre del Patrón (u_cal) [°C]:</label>
+            <input type="number" id="u_patron" value="0.05" step="0.01">
+
+            <label>Resolución del Equipo (Res) [°C]:</label>
+            <input type="number" id="res" value="0.1" step="0.01">
+
+            <label>Homogeneidad del Volumen (ΔT_hom) [°C]:</label>
+            <input type="number" id="u_hom" value="0.45" step="0.05">
+
+            <label>Estabilidad de la Cámara (ΔT_est) [°C]:</label>
+            <input type="number" id="u_est" value="0.25" step="0.05">
+
+            <button class="btn-calc" onclick="calcularIncertidumbre()">CALCULAR PRESUPUESTO</button>
+
+            <div class="result-box">
+                <small>Incertidumbre Expandida (k=2)</small>
+                <h2 id="u_exp">± 0.000 °C</h2>
+                <small id="confianza">Nivel de Confianza: 95.45%</small>
+            </div>
+
+            <button class="btn-pdf" id="btn_pdf" onclick="generarReporteU()">DESCARGAR REPORTE TÉCNICO</button>
+        </div>
+
+        <div class="panel">
+            <h3>Contribución de los Componentes (Pareto)</h3>
+            <div id="chart"></div>
+        </div>
+    </div>
+
+    <script>
+        let u_final = 0;
+        let componentes = {};
+
+        function calcularIncertidumbre() {
+            // Entradas
+            const uCal = parseFloat(document.getElementById('u_patron').value);
+            const res = parseFloat(document.getElementById('res').value);
+            const uHom = parseFloat(document.getElementById('u_hom').value);
+            const uEst = parseFloat(document.getElementById('u_est').value);
+
+            // Cálculos de contribuciones (u_i)
+            const ui_cal = uCal / 2; // Distribución normal k=2
+            const ui_res = res / (2 * Math.sqrt(3)); // Distribución rectangular
+            const ui_hom = uHom / Math.sqrt(3); // Distribución rectangular
+            const ui_est = uEst / Math.sqrt(3); // Distribución rectangular
+
+            // Incertidumbre Combinada (u_c)
+            const u_combinada = Math.sqrt(
+                Math.pow(ui_cal, 2) + 
+                Math.pow(ui_res, 2) + 
+                Math.pow(ui_hom, 2) + 
+                Math.pow(ui_est, 2)
+            );
+
+            // Incertidumbre Expandida (U) con k=2
+            u_final = u_combinada * 2;
+
+            document.getElementById('u_exp').innerText = `± ${u_final.toFixed(3)} °C`;
+            document.getElementById('btn_pdf').style.display = 'block';
+
+            componentes = { ui_cal, ui_res, ui_hom, ui_est };
+            dibujarGrafico(ui_cal, ui_res, ui_hom, ui_est);
+        }
+
+        function dibujarGrafico(c, r, h, e) {
+            const data = [{
+                x: ['Calibración', 'Resolución', 'Homogeneidad', 'Estabilidad'],
+                y: [c*c, r*r, h*h, e*e],
+                type: 'bar',
+                marker: { color: ['#0a192f', '#c82333', '#17a2b8', '#ffc107'] }
+            }];
+
+            const layout = {
+                title: 'Contribución a la Varianza (u_i²)',
+                font: { size: 10 },
+                margin: { t: 40, b: 40, l: 40, r: 20 }
+            };
+
+            Plotly.newPlot('chart', data, layout);
+        }
+
+        async function generarReporteU() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 35, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFontSize(18);
+            doc.text("PRESUPUESTO DE INCERTIDUMBRE - SEVA", 105, 15, {align: 'center'});
+            doc.setFontSize(10);
+            doc.text("MÉTODO DE EVALUACIÓN TIPO B (GUM) | ALMACENES Y CÁMARAS", 105, 25, {align: 'center'});
+
+            doc.autoTable({
+                startY: 40,
+                head: [['Fuente', 'Valor', 'Distribución', 'Divisor', 'u_i (contribución)']],
+                body: [
+                    ['Incertidumbre Patrón', document.getElementById('u_patron').value, 'Normal', '2', componentes.ui_cal.toFixed(4)],
+                    ['Resolución', document.getElementById('res').value, 'Rectangular', '3.46', componentes.ui_res.toFixed(4)],
+                    ['Homogeneidad', document.getElementById('u_hom').value, 'Rectangular', '1.73', componentes.ui_hom.toFixed(4)],
+                    ['Estabilidad', document.getElementById('u_est').value, 'Rectangular', '1.73', componentes.ui_est.toFixed(4)]
+                ],
+                headStyles: { fillColor: [10, 25, 47] }
+            });
+
+            doc.setTextColor(200, 35, 51); doc.setFontSize(14);
+            doc.text(`INCERTIDUMBRE EXPANDIDA (U): ± ${u_final.toFixed(3)} °C`, 15, 110);
+            
+            doc.setTextColor(0); doc.setFontSize(9);
+            const nota = "La incertidumbre expandida reportada se basa en una incertidumbre estándar combinada multiplicada por un factor de cobertura k = 2, que para una distribución normal corresponde a una probabilidad de cobertura de aproximadamente el 95%.";
+            doc.text(doc.splitTextToSize(nota, 180), 15, 120);
+
+            doc.setFillColor(200, 35, 51); doc.rect(0, 280, 210, 17, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.text("SEVA Metrología | Ing. Fabián Durán Valencia | Ciudad de México 2026", 105, 290, {align: 'center'});
+
+            doc.save("Incertidumbre_SEVA.pdf");
+        }
+    </script>
+</body>
+</html>
