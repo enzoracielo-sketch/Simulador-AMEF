@@ -20,7 +20,9 @@
         .btn-calc { background: var(--blue-dark); color: white; }
         .btn-pdf { background: var(--seva-red); color: white; display: none; }
         .capa-box { margin-top: 15px; padding: 12px; border-radius: 5px; font-size: 0.85em; border: 1px solid #ddd; }
-        #chart-container { height: 550px; width: 100%; border-radius: 8px; overflow: hidden; background: white; }
+        /* Estilo crítico para visibilidad del gráfico */
+        #chart-container { height: 550px; width: 100%; border-radius: 8px; border: 1px solid #eee; background: white; }
+        #chart { height: 100%; width: 100%; }
     </style>
 </head>
 <body>
@@ -50,24 +52,24 @@
 
             <label>Severidad (S):</label>
             <select id="s_val">
-                <option value="10">10-Catastrófico (Muerte del Producto)</option>
-                <option value="7">7-Alto (Pérdida de Potencia)</option>
-                <option value="4">4-Moderado (Vida útil reducida)</option>
-                <option value="1">1-Bajo (Sin impacto)</option>
+                <option value="10">10-Catastrófico</option>
+                <option value="7">7-Alto</option>
+                <option value="4">4-Moderado</option>
+                <option value="1">1-Bajo</option>
             </select>
 
             <label>Ocurrencia (O):</label>
             <select id="o_val">
-                <option value="10">10-Frecuente (Puertas/Techo)</option>
-                <option value="5">5-Ocasional (Zonas de flujo)</option>
-                <option value="1">1-Remota (Centro del almacén)</option>
+                <option value="10">10-Frecuente</option>
+                <option value="5">5-Ocasional</option>
+                <option value="1">1-Remota</option>
             </select>
 
             <label>Detección (D):</label>
             <select id="d_val">
-                <option value="10">10-Imposible (Sin registro)</option>
-                <option value="5">5-Baja (Muestreo manual)</option>
-                <option value="1">1-Alta (Monitoreo IoT Tiempo Real)</option>
+                <option value="10">10-Imposible</option>
+                <option value="5">5-Baja</option>
+                <option value="1">1-Alta (IoT)</option>
             </select>
 
             <button class="btn-calc" onclick="ejecutarAnalisis()">CALCULAR NPR & CAPA</button>
@@ -78,7 +80,7 @@
 
         <div class="panel">
             <div id="chart-container">
-                <div id="chart" style="height:100%"></div>
+                <div id="chart"></div>
             </div>
         </div>
     </div>
@@ -86,6 +88,11 @@
     <script>
         let globalNPR = 0;
         let globalCAPA = "";
+
+        // Inicializar gráfico al cargar la página
+        window.onload = function() {
+            render3D(10, 1.5, 5, "#bbb");
+        };
 
         function ejecutarAnalisis() {
             const s = parseInt(document.getElementById('s_val').value);
@@ -100,13 +107,13 @@
             capaDiv.style.display = "block";
 
             if (globalNPR >= 300) {
-                globalCAPA = "ACCIÓN: Instalación obligatoria de sensor con alarma SMS/Email, calibración semestral y redundancia de datos.";
+                globalCAPA = "ACCIÓN: Instalación obligatoria de sensor con alarma SMS/Email.";
                 capaDiv.style.background = "#fff3f3"; capaDiv.style.color = "#c82333";
             } else if (globalNPR >= 100) {
-                globalCAPA = "ACCIÓN: Monitoreo periódico. Se recomienda registro digital ALCOA+ y verificación de sellos en puertas.";
+                globalCAPA = "ACCIÓN: Monitoreo periódico. Se recomienda registro digital ALCOA+.";
                 capaDiv.style.background = "#fffceb"; capaDiv.style.color = "#856404";
             } else {
-                globalCAPA = "ACCIÓN: No se requieren controles adicionales. Punto de baja variabilidad.";
+                globalCAPA = "ACCIÓN: No se requieren controles adicionales.";
                 capaDiv.style.background = "#f0fff4"; capaDiv.style.color = "#28a745";
             }
 
@@ -114,39 +121,72 @@
             document.getElementById('btn_pdf').style.display = "block";
             
             const sColor = (globalNPR >= 300) ? "#28a745" : (globalNPR >= 100 ? "#ffc107" : "#dc3545");
+            
+            // Forzar renderizado inmediato
             render3D(x, y, z, sColor);
         }
 
-        function getRack(x) {
-            return { type: 'scatter3d', mode: 'lines', x: [x, x+2.5, x+2.5, x, x, x, x+2.5, x+2.5, x, x], y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2], z: [0, 0, 0, 0, 0, 8, 8, 8, 8, 8], line: { color: '#ccc', width: 1 }, showlegend: false };
+        function getRack(xPos) {
+            return {
+                type: 'scatter3d',
+                mode: 'lines',
+                x: [xPos, xPos+2, xPos+2, xPos, xPos, xPos, xPos+2, xPos+2, xPos, xPos],
+                y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2],
+                z: [0, 0, 0, 0, 0, 8, 8, 8, 8, 8],
+                line: { color: '#ccc', width: 2 },
+                showlegend: false
+            };
         }
 
         function render3D(x, y, z, color) {
-            const walls = { type: 'scatter3d', mode: 'lines', x: [0, 20, 20, 0, 0, 0, 20, 20, 0, 0, 20, 20, 20, 20, 0, 0], y: [0, 0, 30, 30, 0, 0, 0, 30, 30, 0, 0, 0, 30, 30, 30, 30], z: [0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 0, 0, 10, 10, 0], line: { color: '#2c3e50', width: 2 } };
+            const walls = {
+                type: 'scatter3d',
+                mode: 'lines',
+                x: [0, 20, 20, 0, 0, 0, 20, 20, 0, 0, 20, 20, 20, 20, 0, 0],
+                y: [0, 0, 30, 30, 0, 0, 0, 30, 30, 0, 0, 0, 30, 30, 30, 30],
+                z: [0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 0, 0, 10, 10, 0],
+                line: { color: '#2c3e50', width: 3 },
+                name: 'Almacén'
+            };
+
             const racks = [1, 4, 7, 10, 13, 16].map(p => getRack(p));
-            const sensor = { x: [x], y: [y], z: [z], mode: 'markers+text', type: 'scatter3d', marker: { size: 14, color: color, symbol: 'diamond', line: {color: 'black', width: 1} }, text: [document.getElementById('sensor_id').value], textposition: 'top center' };
             
-            Plotly.react('chart', [walls, ...racks, sensor], { 
-                scene: { camera: {eye: {x:1.6, y:1.6, z:1.3}}}, 
-                margin: {l:0, r:0, b:0, t:0}, 
-                showlegend: false,
+            const sensor = {
+                x: [x], y: [y], z: [z],
+                mode: 'markers+text',
+                type: 'scatter3d',
+                marker: { size: 12, color: color, symbol: 'diamond', line: {color: 'black', width: 1} },
+                text: [document.getElementById('sensor_id').value],
+                textposition: 'top center'
+            };
+
+            const layout = {
+                scene: { 
+                    camera: { eye: { x: 1.5, y: 1.5, z: 1.2 } },
+                    xaxis: { title: 'X', range: [0, 20] },
+                    yaxis: { title: 'Y', range: [0, 30] },
+                    zaxis: { title: 'Z', range: [0, 10] }
+                },
+                margin: { l: 0, r: 0, b: 0, t: 0 },
                 paper_bgcolor: 'white',
                 plot_bgcolor: 'white'
-            });
+            };
+
+            // Usamos NewPlot para asegurar que se dibuje desde cero en el dashboard
+            Plotly.newPlot('chart', [walls, ...racks, sensor], layout);
         }
 
         async function descargarReporte() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const sensorId = document.getElementById('sensor_id').value;
-            const btnPdf = document.getElementById('btn_pdf');
+            const btn = document.getElementById('btn_pdf');
 
-            btnPdf.innerText = "PROCESANDO IMAGEN...";
-            btnPdf.disabled = true;
+            btn.innerText = "PROCESANDO PDF...";
+            btn.disabled = true;
 
-            // --- PROMESA DE RENDERIZADO ---
-            // Esperamos a que Plotly termine de procesar el WebGL
-            await new Promise(r => setTimeout(r, 1200));
+            // Esperar a que el 3D se estabilice
+            await new Promise(r => setTimeout(r, 1000));
 
             const container = document.getElementById('chart-container');
             
@@ -159,24 +199,43 @@
 
                 const imgData = canvas.toDataURL('image/png');
 
-                // Header Profesional
+                // Header
                 doc.setFillColor(10, 25, 47); doc.rect(0, 0, 297, 35, 'F');
                 doc.setTextColor(255, 255, 255); doc.setFontSize(18);
                 doc.text("MATRIZ AMEF & PLAN DE ACCIONES (CAPA) - SEVA", 148, 15, {align: 'center'});
-                doc.setFontSize(10); doc.text(`UBICACIÓN EVALUADA: ${sensorId} | CUMPLIMIENTO METROLOGÍA 4.0`, 148, 25, {align: 'center'});
-
-                // Tabla AMEF
+                
+                // Tabla
                 doc.autoTable({
                     startY: 45,
-                    head: [['FACTOR', 'Severidad', 'Ocurrencia', 'Detección', 'NPR', 'ESTADO DE RIESGO']],
-                    body: [['Evaluación Térmica', document.getElementById('s_val').value, document.getElementById('o_val').value, document.getElementById('d_val').value, globalNPR, globalNPR >= 300 ? 'CRÍTICO' : 'CONTROLADO']],
-                    headStyles: { fillColor: [10, 25, 47] },
-                    columnStyles: { 4: { fontStyle: 'bold', fillColor: globalNPR >= 300 ? [40, 167, 69] : [200, 35, 51], textColor: 255 } }
+                    head: [['FACTOR', 'Severidad', 'Ocurrencia', 'Detección', 'NPR', 'RIESGO']],
+                    body: [['Evaluación Térmica', document.getElementById('s_val').value, document.getElementById('o_val').value, document.getElementById('d_val').value, globalNPR, globalNPR >= 300 ? 'CRÍTICO' : 'ESTABLE']],
+                    headStyles: { fillColor: [10, 25, 47] }
                 });
 
-                // Acción Correctiva
-                doc.setDrawColor(200, 35, 51); doc.setLineWidth(1);
-                doc.rect(15, 80, 267, 20);
-                doc.setTextColor(200, 35, 51); doc.setFontSize(11); doc.setFont("helvetica", "bold");
-                doc.text("PLAN DE ACCIÓN RECOMENDADO (CAPA):", 20, 87);
-                doc.
+                // Imagen
+                doc.addImage(imgData, 'PNG', 15, 110, 130, 80);
+
+                // CAPA y Justificación
+                doc.setTextColor(10, 25, 47); doc.setFontSize(11);
+                doc.text("PLAN DE ACCIÓN (CAPA):", 155, 110);
+                doc.setFontSize(9);
+                doc.text(doc.splitTextToSize(globalCAPA, 120), 155, 118);
+
+                // Footer
+                doc.setFillColor(200, 35, 51); doc.rect(0, 195, 297, 15, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.text("SEVA Metrología | Aprender-Haciendo | Ing. Fabián Durán Valencia", 148, 205, {align: 'center'});
+
+                doc.save(`AMEF_SEVA_${sensorId}.pdf`);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error al generar imagen.");
+            } finally {
+                btn.innerText = "EXPORTAR MATRIZ CAPA";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
