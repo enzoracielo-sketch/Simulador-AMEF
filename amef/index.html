@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SEVA - Master Dashboard AMEF 4.0</title>
+    <title>SEVA - Reporte AMEF 3D Certificado</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -18,9 +18,9 @@
         input, select { width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; font-size: 0.85em; }
         .btn-calc { background: var(--blue-dark); color: white; width: 100%; padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
         .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 10px; margin-top: 8px; font-weight: bold; display: none; border: none; border-radius: 4px; }
-        .risk-indicator { padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-top: 10px; font-size: 0.9em; display: none; }
-        #chart-container { height: 550px; width: 100%; border-radius: 8px; background: white; border: 1px solid #ddd; position: relative; }
+        #chart-container { height: 550px; width: 100%; border-radius: 8px; background: white; border: 1px solid #ddd; }
         #chart { height: 100%; width: 100%; }
+        .risk-label { padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -28,19 +28,19 @@
     <div class="header-ui">
         <div>
             <h2 style="margin:0; color: var(--blue-dark);">SEVA METROLOGÍA</h2>
-            <small>Sistema Experto AMEF | Ing. Fabián Durán Valencia</small>
+            <small>Auditoría de Riesgos AMEF 4.0 | Caracterización de Almacenes</small>
         </div>
         <div style="text-align: right; font-size: 0.85em;">
-            <strong>METROLOGÍA 4.0</strong><br>
-            <span>Análisis Volumétrico de Riesgos</span>
+            <strong>MÉTODO SEVA</strong><br>
+            <span>Metrología Industrial & Validación</span>
         </div>
     </div>
 
     <div class="main-grid">
         <div class="panel">
-            <h3>Entradas de Riesgo</h3>
-            <label>ID Sensor / Ubicación:</label>
-            <input type="text" id="sensor_id" value="SEVA-AMEF-01">
+            <h3>Configuración Técnica</h3>
+            <label>ID Dispositivo:</label>
+            <input type="text" id="sensor_id" value="SEVA-AMEF-PRO">
 
             <div style="display:flex; gap:5px;">
                 <div style="flex:1"><label>X(m):</label><input type="number" id="x_v" value="5"></div>
@@ -49,158 +49,149 @@
             </div>
 
             <hr>
-            <label>Modos de Falla Operativos:</label>
+            <label>Factor Eléctrico (UPS):</label>
             <select id="r_elec">
-                <option value="10">Crítico: Sin Respaldo Eléctrico</option>
-                <option value="5">Medio: Con UPS Básica</option>
+                <option value="10">Crítico: Sin Respaldo</option>
                 <option value="1">Bajo: Redundancia Total</option>
             </select>
 
-            <select id="r_human">
-                <option value="10">Falla: Personal No Capacitado</option>
-                <option value="4">Control: Protocolo ALCOA+</option>
-            </select>
-
+            <label>Integridad de Datos (ALCOA+):</label>
             <select id="r_iot">
-                <option value="10">Riesgo: Pérdida de Datos IoT</option>
-                <option value="1">Seguro: Sincronización Cloud</option>
+                <option value="10">Riesgo: Sin Sincronización</option>
+                <option value="1">Seguro: Cloud Backup</option>
             </select>
 
-            <button class="btn-calc" onclick="procesarAnalisis()">EVALUAR ESCENARIO</button>
-            
-            <div id="risk_label" class="risk-indicator"></div>
-
-            <button class="btn-pdf" id="btn_pdf" onclick="exportarReporteCompleto()">GENERAR REPORTE PDF</button>
+            <button class="btn-calc" onclick="ejecutarAnalisis()">EVALUAR Y RENDERIZAR</button>
+            <div id="risk_result" class="risk-label"></div>
+            <button class="btn-pdf" id="btn_pdf" onclick="descargarReporteSeguro()">GENERAR REPORTE PDF</button>
         </div>
 
         <div class="panel">
-            <div id="chart-container">
-                <div id="chart"></div>
-            </div>
+            <div id="chart-container"><div id="chart"></div></div>
         </div>
     </div>
 
     <script>
         let nprFinal = 0;
-        let colorFinal = "#bbb";
+        let colorS = "#bbb";
 
-        function procesarAnalisis() {
+        function ejecutarAnalisis() {
             const x = parseFloat(document.getElementById('x_v').value);
             const y = parseFloat(document.getElementById('y_v').value);
             const z = parseFloat(document.getElementById('z_v').value);
             const rE = parseInt(document.getElementById('r_elec').value);
-            const rH = parseInt(document.getElementById('r_human').value);
             const rI = parseInt(document.getElementById('r_iot').value);
 
-            // Algoritmo NPR SEVA
-            let nprT = (z >= 8.5 ? 50 : 10) + (y <= 2.5 ? 50 : 10);
-            let nprO = (rE * rH * rI) / 5;
-            nprFinal = Math.round(nprT + nprO);
-
-            const label = document.getElementById('risk_label');
-            label.style.display = "block";
+            nprFinal = (z >= 8.5 ? 60 : 10) + (y <= 2.5 ? 40 : 10) + (rE * rI);
             
-            if (nprFinal >= 120) {
-                colorFinal = "#28a745"; // Verde: Punto Crítico Detectado
-                label.style.background = "#d4edda"; label.style.color = "#155724";
-                label.innerText = `NPR: ${nprFinal} - RIESGO ALTO (PRIORITARIO)`;
-            } else if (nprFinal >= 60) {
-                colorFinal = "#ffc107"; // Amarillo
-                label.style.background = "#fff3cd"; label.style.color = "#856404";
-                label.innerText = `NPR: ${nprFinal} - RIESGO MEDIO (PREVENTIVO)`;
-            } else {
-                colorFinal = "#dc3545"; // Rojo
-                label.style.background = "#f8d7da"; label.style.color = "#721c24";
-                label.innerText = `NPR: ${nprFinal} - BAJO IMPACTO`;
-            }
+            const label = document.getElementById('risk_result');
+            label.style.display = "block";
+            label.innerText = `NPR: ${nprFinal} - ${nprFinal >= 100 ? 'ALTO RIESGO' : 'RIESGO CONTROLADO'}`;
+            label.style.background = nprFinal >= 100 ? "#f8d7da" : "#d4edda";
+            label.style.color = nprFinal >= 100 ? "#721c24" : "#155724";
 
+            colorS = nprFinal >= 100 ? "#28a745" : "#dc3545";
             document.getElementById('btn_pdf').style.display = "block";
-            renderizarAlmacen(x, y, z, colorFinal);
+            
+            dibujarEscena(x, y, z, colorS);
         }
 
-        function getRack(xPos) {
-            return {
-                type: 'scatter3d', mode: 'lines',
-                x: [xPos, xPos+2, xPos+2, xPos, xPos, xPos, xPos+2, xPos+2, xPos, xPos, xPos+2, xPos+2, xPos+2, xPos+2, xPos, xPos],
-                y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2, 2, 2, 28, 28, 28, 28],
-                z: [0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 0, 0, 8, 8, 0],
-                line: { color: '#bdc3c7', width: 2 }, showlegend: false
-            };
-        }
-
-        function renderizarAlmacen(x, y, z, color) {
+        function dibujarEscena(x, y, z, color) {
             const walls = {
                 type: 'scatter3d', mode: 'lines',
                 x: [0, 20, 20, 0, 0, 0, 20, 20, 0, 0, 20, 20, 20, 20, 0, 0],
                 y: [0, 0, 30, 30, 0, 0, 0, 30, 30, 0, 0, 0, 30, 30, 30, 30],
                 z: [0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10, 0, 0, 10, 10, 0],
-                line: { color: '#2c3e50', width: 3 }, name: 'Estructura'
+                line: { color: '#2c3e50', width: 3 }, name: 'Almacén'
             };
 
-            const racks = [1, 4, 7, 10, 13, 16].map(p => getRack(p));
+            const racks = [1, 5, 9, 13, 17].map(px => ({
+                type: 'scatter3d', mode: 'lines',
+                x: [px, px+2, px+2, px, px, px, px+2, px+2, px, px, px+2, px+2, px+2, px+2, px, px],
+                y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2, 2, 2, 28, 28, 28, 28],
+                z: [0, 0, 0, 0, 0, 8, 8, 8, 8, 8, 8, 0, 0, 8, 8, 0],
+                line: { color: '#bdc3c7', width: 2 }, showlegend: false
+            }));
+
             const sensor = {
                 x: [x], y: [y], z: [z],
                 mode: 'markers+text', type: 'scatter3d',
-                marker: { size: 14, color: color, symbol: 'diamond', line: {color: 'black', width: 1} },
+                marker: { size: 12, color: color, symbol: 'diamond', line: {color: 'black', width: 1} },
                 text: [document.getElementById('sensor_id').value], textposition: 'top center'
             };
 
+            const config = {
+                responsive: true,
+                displayModeBar: false,
+                // CONFIGURACIÓN CRÍTICA PARA CAPTURA DE PDF
+                doubleClick: 'reset',
+                plotGlPixelRatio: 2,
+                preserveDrawingBuffer: true 
+            };
+
             Plotly.newPlot('chart', [walls, ...racks, sensor], {
-                scene: { camera: { eye: { x: 1.6, y: 1.6, z: 1.3 } }, xaxis:{range:[0,20]}, yaxis:{range:[0,30]}, zaxis:{range:[0,10]} },
-                margin: { l: 0, r: 0, b: 0, t: 0 }, paper_bgcolor: 'white'
-            });
+                scene: { xaxis:{range:[0,20]}, yaxis:{range:[0,30]}, zaxis:{range:[0,10]}, camera: {eye: {x:1.6, y:1.6, z:1.3}} },
+                margin: {l:0, r:0, b:0, t:0}, paper_bgcolor: 'white'
+            }, config);
         }
 
-        async function exportarReporteCompleto() {
+        async function descargarReporteSeguro() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const btn = document.getElementById('btn_pdf');
 
-            btn.innerText = "CAPTURA TÉCNICA..."; btn.disabled = true;
+            btn.innerText = "PROCESANDO REPORTE..."; btn.disabled = true;
 
-            // Espera forzada para renderizado WebGL
-            await new Promise(r => setTimeout(r, 1500));
+            // Esperamos un momento para asegurar que el buffer de dibujo esté listo
+            await new Promise(r => setTimeout(r, 1000));
 
-            const canvas = await html2canvas(document.getElementById('chart-container'), { scale: 2, useCORS: true });
+            // Capturamos el gráfico
+            const canvas = await html2canvas(document.getElementById('chart-container'), {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+
             const imgData = canvas.toDataURL('image/png');
 
-            // Header
+            // Header SEVA
             doc.setFillColor(10, 25, 47); doc.rect(0, 0, 297, 35, 'F');
-            doc.setTextColor(255, 255, 255); doc.setFontSize(18);
-            doc.text("REPORTE MAESTRO DE RIESGOS AMEF - SEVA METROLOGÍA", 148, 15, {align: 'center'});
+            doc.setTextColor(255, 255, 255); doc.setFontSize(20);
+            doc.text("REPORTE TÉCNICO AMEF - SEVA METROLOGÍA", 148, 15, {align: 'center'});
             
-            // Tabla de Datos (Asegura visibilidad de coordenadas y fallos)
+            // Tabla de cumplimiento
             doc.autoTable({
                 startY: 40,
-                head: [['EJE / FACTOR', 'VALOR MEDIDO', 'MODO DE FALLA', 'NIVEL NPR']],
+                head: [['FACTOR', 'COORDENADA', 'NIVEL DE RIESGO', 'MODO DE FALLA']],
                 body: [
-                    ['X (Ancho)', document.getElementById('x_v').value + 'm', 'Ubicación Pasillo', '-'],
-                    ['Y (Largo)', document.getElementById('y_v').value + 'm', 'Infiltración Puerta', parseFloat(document.getElementById('y_v').value) <= 2.5 ? 'CRÍTICO' : 'ESTABLE'],
-                    ['Z (Alto)', document.getElementById('z_v').value + 'm', 'Estratificación', parseFloat(document.getElementById('z_v').value) >= 8.5 ? 'CRÍTICO' : 'ESTABLE'],
-                    ['Infraestructura', '-', document.getElementById('r_elec').options[document.getElementById('r_elec').selectedIndex].text, nprFinal]
+                    ['X (Ancho)', document.getElementById('x_v').value + ' m', 'Informativo', 'Ubicación Pasillo'],
+                    ['Y (Largo)', document.getElementById('y_v').value + ' m', parseFloat(document.getElementById('y_v').value) <= 2.5 ? 'ALTO' : 'ESTABLE', 'Infiltración Puertas'],
+                    ['Z (Alto)', document.getElementById('z_v').value + ' m', parseFloat(document.getElementById('z_v').value) >= 8.5 ? 'ALTO' : 'ESTABLE', 'Estratificación Térmica'],
+                    ['Global NPR', '-', nprFinal, 'Evaluación de Infraestructura']
                 ],
                 headStyles: { fillColor: [10, 25, 47] }
             });
 
-            // Imagen 3D
+            // Añadir imagen 3D capturada
             doc.addImage(imgData, 'PNG', 150, 90, 135, 95);
 
-            // Diagnóstico
+            // Conclusiones
             doc.setTextColor(10, 25, 47); doc.setFontSize(12); doc.setFont("helvetica", "bold");
-            doc.text("DIAGNÓSTICO TÉCNICO CAPA:", 15, 100);
+            doc.text("CONCLUSIÓN TÉCNICA CAPA:", 15, 100);
             doc.setFontSize(10); doc.setFont("helvetica", "normal");
-            const diag = `Puntaje Final: ${nprFinal}. Según el factor humano (${document.getElementById('r_human').options[document.getElementById('r_human').selectedIndex].text}) y el riesgo IoT (${document.getElementById('r_iot').options[document.getElementById('r_iot').selectedIndex].text}), la ubicación se considera ${nprFinal >= 120 ? 'ÓPTIMA PARA MONITOREO' : 'NO PRIORITARIA'}.`;
+            const diag = `Puntaje Final: ${nprFinal}. La evaluación técnica determina que el sensor en la posición actual es ${nprFinal >= 100 ? 'FUNDAMENTAL PARA EL MONITOREO CRÍTICO' : 'COMPLEMENTARIO'}.`;
             doc.text(doc.splitTextToSize(diag, 130), 15, 110);
 
+            // Footer
             doc.setFillColor(200, 35, 51); doc.rect(0, 195, 297, 15, 'F');
             doc.setTextColor(255, 255, 255);
             doc.text("SEVA Metrología | Director: Ing. Fabián Durán Valencia | México 2026", 148, 205, {align: 'center'});
 
-            doc.save(`Reporte_Final_SEVA_${document.getElementById('sensor_id').value}.pdf`);
+            doc.save(`AMEF_Reporte_SEVA_${document.getElementById('sensor_id').value}.pdf`);
             btn.innerText = "GENERAR REPORTE PDF"; btn.disabled = false;
         }
 
-        window.onload = () => procesarAnalisis();
+        window.onload = () => ejecutarAnalisis();
     </script>
 </body>
 </html>
