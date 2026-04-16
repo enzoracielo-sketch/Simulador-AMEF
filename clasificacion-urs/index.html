@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVAMETROLOGÍA - Generador de URS Profesional</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --seva-red: #c82333; --blue-dark: #0a192f; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); margin: 0; padding: 10px; }
+        .header-ui { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 8px solid var(--seva-red); }
+        .main-container { max-width: 1200px; margin: auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h3 { color: var(--blue-dark); border-bottom: 2px solid var(--seva-red); padding-bottom: 5px; margin-top: 0; font-size: 1.1em; }
+        
+        /* Formulario de Datos */
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75em; font-weight: bold; color: #444; margin-bottom: 5px; }
+        input { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+        
+        .table-wrapper { max-height: 550px; overflow-y: auto; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+        th { background: var(--blue-dark); color: white; padding: 10px; text-align: left; position: sticky; top: 0; z-index: 10; }
+        td { padding: 8px; border-bottom: 1px solid #eee; }
+        
+        select { padding: 4px; border-radius: 4px; border: 1px solid #ccc; width: 100%; cursor: pointer; }
+        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; text-transform: uppercase; }
+        .cat-tag { font-weight: bold; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+    <div class="header-ui">
+        <div>
+            <h1 style="margin:0; color: var(--blue-dark); font-size: 1.4rem;">SEVAMETROLOGÍA</h1>
+            <small>"aprender haciendo" | Especificaciones de Requerimientos de Usuario</small>
+        </div>
+        <div style="text-align: right; font-size: 0.8em;"><strong>CALIDAD & VALIDACIÓN</strong></div>
+    </div>
+
+    <div class="main-container">
+        <div class="panel">
+            <h3>Datos del Emisor</h3>
+            <div class="input-group">
+                <label>Nombre del Responsable:</label>
+                <input type="text" id="usr_name" placeholder="Ej. Ing. Fabián Durán">
+            </div>
+            <div class="input-group">
+                <label>Puesto / Cargo:</label>
+                <input type="text" id="usr_job" placeholder="Ej. Director de Consultoría">
+            </div>
+            <div class="input-group">
+                <label>Tipo de Equipo / Activo:</label>
+                <input type="text" id="eq_type" placeholder="Ej. Cámara Climática Binder">
+            </div>
+            <hr>
+            <p style="font-size: 0.7em; color: #666; line-height: 1.4;">
+                Complete estos campos para que el documento PDF incluya la validez técnica y el cuadro de firmas reglamentario.
+            </p>
+            <button class="btn-pdf" onclick="generarPDF()">Generar Documento URS</button>
+        </div>
+
+        <div class="panel">
+            <h3>Clasificación de 25 Requerimientos Técnicos</h3>
+            <div class="table-wrapper">
+                <table id="ursTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 30px;">#</th>
+                            <th>Requerimiento Técnico del Sistema</th>
+                            <th>Categoría</th>
+                            <th style="width: 130px;">Clasificación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const reqs = [
+            { r: "Rango operativo de temperatura: -20°C a +70°C", c: "Metrología" },
+            { r: "Rango operativo de humedad: 10% a 98% HR", c: "Metrología" },
+            { r: "Estabilidad térmica mejor a ±0.3°C", c: "Metrología" },
+            { r: "Certificados de calibración acreditados ISO 17025", c: "Metrología" },
+            { r: "Suministro eléctrico 220V con protección de picos", c: "Infraestructura" },
+            { r: "Drenaje de condensados con sifón sanitario", c: "Infraestructura" },
+            { r: "Acabado interno en acero inoxidable 316L (espejo)", c: "Infraestructura" },
+            { r: "Audit Trail (Rastreo de auditoría) 21 CFR Parte 11", c: "Software" },
+            { r: "Acceso con firma electrónica para cambios de SetPoint", c: "Software" },
+            { r: "Exportación de datos en formato seguro .CSV / .PDF", c: "Software" },
+            { r: "Termostato de seguridad Clase 3.1 independiente", c: "Seguridad" },
+            { r: "Alarmas audibles y visuales con retardo configurable", c: "Seguridad" },
+            { r: "Puerta con sello magnético de doble cámara", c: "Infraestructura" },
+            { r: "Sensor de humedad capacitivo con filtro de sales", c: "Metrología" },
+            { r: "Bandejas regulables en altura (mín. 4 niveles)", c: "Infraestructura" },
+            { r: "Puerto de acceso lateral para validación (3 pulgadas)", c: "Infraestructura" },
+            { r: "Software de monitoreo remoto vía LAN/Ethernet", c: "Software" },
+            { r: "Compresor con refrigerante libre de CFC (Ecológico)", c: "Infraestructura" },
+            { r: "Batería de respaldo para el PLC (Sostenimiento)", c: "Seguridad" },
+            { r: "Manuales de mantenimiento preventivo y despiece", c: "Infraestructura" },
+            { r: "Entrenamiento técnico para 3 operadores incluido", c: "Software" },
+            { r: "Tiempo de recuperación térmica < 10 minutos", c: "Metrología" },
+            { r: "Nivelación física mediante soportes antivibratorios", c: "Infraestructura" },
+            { r: "Protocolo IQ/OQ de fábrica incluido (FAT)", c: "Metrología" },
+            { r: "Luz interior tipo LED estanca (Grado IP65)", c: "Infraestructura" }
+        ];
+
+        function init() {
+            const body = document.getElementById('tableBody');
+            reqs.forEach((item, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${i+1}</td>
+                    <td>${item.r}</td>
+                    <td class="cat-tag">${item.c}</td>
+                    <td>
+                        <select class="sel">
+                            <option value="Mandatorio">Mandatorio</option>
+                            <option value="Deseable">Deseable</option>
+                        </select>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        async function generarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const name = document.getElementById('usr_name').value || "N/A";
+            const job = document.getElementById('usr_job').value || "N/A";
+            const eq = document.getElementById('eq_type').value || "N/A";
+
+            // Encabezado Institucional
+            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255); doc.setFontSize(18);
+            doc.text("ESPECIFICACIÓN DE REQUERIMIENTOS DE USUARIO", 105, 15, {align:'center'});
+            doc.setFontSize(10);
+            doc.text(`EQUIPO: ${eq.toUpperCase()}`, 105, 25, {align:'center'});
+            doc.text(`RESPONSABLE: ${name.toUpperCase()} - ${job.toUpperCase()}`, 105, 32, {align:'center'});
+
+            // Tabla
+            const rows = [];
+            document.querySelectorAll('#tableBody tr').forEach((tr, i) => {
+                rows.push([i+1, reqs[i].r, reqs[i].c, tr.querySelector('.sel').value]);
+            });
+
+            doc.autoTable({
+                startY: 45,
+                head: [['#', 'Requerimiento del Usuario', 'Categoría', 'Prioridad']],
+                body: rows,
+                headStyles: { fillColor: [10, 25, 47] },
+                alternateRowStyles: { fillColor: [240, 240, 240] }
+            });
+
+            // Cuadro de Firmas
+            const finalY = doc.lastAutoTable.finalY + 30;
+            doc.setTextColor(0);
+            doc.line(20, finalY, 90, finalY);
+            doc.line(120, finalY, 190, finalY);
+            doc.setFontSize(9);
+            doc.text("FIRMA DEL RESPONSABLE (EMISOR)", 55, finalY + 5, {align:'center'});
+            doc.text("FIRMA DE CALIDAD / VALIDACIÓN", 155, finalY + 5, {align:'center'});
+            doc.text(name, 55, finalY - 2, {align:'center'});
+
+            // Pie de página SEVA
+            doc.setFillColor(200, 35, 51); doc.rect(0, 280, 210, 17, 'F');
+            doc.setTextColor(255); doc.text("SEVAMETROLOGÍA | Aprender Haciendo | México 2026", 105, 290, {align: 'center'});
+
+            doc.save(`URS_${eq.replace(/\s+/g, '_')}_SEVAM.pdf`);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
