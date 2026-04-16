@@ -2,25 +2,26 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>SEVA - Presupuesto de Incertidumbre GUM PRO</title>
+    <title>SEVA - Incertidumbre Termohigrométrica PRO</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root { --blue-dark: #0a192f; --seva-red: #c82333; --bg-gray: #f4f7f6; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-gray); margin: 0; padding: 15px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg-gray); margin: 0; padding: 10px; }
         .header-ui { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 8px solid var(--seva-red); }
-        .main-grid { display: grid; grid-template-columns: 400px 1fr; gap: 15px; }
-        .panel { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
-        h3 { margin-top: 0; color: var(--blue-dark); border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; }
-        label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 0.75em; color: #444; }
-        input { width: 92%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 12px; font-size: 0.85em; }
+        .main-grid { display: grid; grid-template-columns: 420px 1fr; gap: 15px; }
+        .panel { background: white; padding: 18px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 92vh; overflow-y: auto; }
+        h3 { margin: 0 0 10px 0; color: var(--blue-dark); border-bottom: 2px solid #eee; font-size: 1.1em; }
+        .section-title { font-size: 0.8em; color: var(--seva-red); font-weight: bold; margin: 10px 0 5px 0; text-transform: uppercase; }
+        label { display: block; font-weight: bold; margin-bottom: 2px; font-size: 0.75em; color: #444; }
+        input { width: 92%; padding: 7px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 8px; font-size: 0.85em; }
         .result-panel { background: var(--blue-dark); color: white; padding: 15px; border-radius: 6px; text-align: center; margin-top: 10px; }
-        .result-panel h2 { margin: 5px 0; color: #00ffcc; font-size: 1.8em; }
+        .result-panel h2 { margin: 5px 0; color: #00ffcc; font-size: 1.6em; }
         .btn-calc { background: var(--blue-dark); color: white; width: 100%; padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
         .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 12px; margin-top: 10px; font-weight: bold; display: none; border: none; border-radius: 4px; }
-        #chart { height: 450px; width: 100%; border-radius: 8px; border: 1px solid #ddd; background: white; }
+        #chart { height: 400px; width: 100%; border-radius: 8px; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
@@ -28,7 +29,7 @@
     <div class="header-ui">
         <div>
             <h2 style="margin:0; color: var(--blue-dark);">SEVA METROLOGÍA</h2>
-            <small>Cálculo de Incertidumbre (GUM) | Metrología 4.0</small>
+            <small>Incertidumbre Combinada T/HR | GUM Metrología 4.0</small>
         </div>
         <div style="text-align: right; font-size: 0.8em;">
             <strong>MÉTODO SEVA</strong><br><span>Ing. Fabián Durán Valencia</span>
@@ -37,98 +38,115 @@
 
     <div class="main-grid">
         <div class="panel">
-            <h3>Componentes del Presupuesto</h3>
+            <h3>Componentes de Humedad</h3>
             
-            <label>Incertidumbre del Patrón (U_cal / k):</label>
-            <input type="number" id="u_cal" value="0.050" step="0.001">
+            <div class="section-title">Certificado de Calibración</div>
+            <label>Incertidumbre Expandida Certificado (U_cert) [%HR]:</label>
+            <input type="number" id="h_cert" value="1.5" step="0.1">
+            <label>Incertidumbre Curva de Ajuste/Regresión [%HR]:</label>
+            <input type="number" id="h_fit" value="0.5" step="0.1">
 
-            <label>Resolución del Equipo (Res):</label>
-            <input type="number" id="u_res" value="0.100" step="0.001">
+            <div class="section-title">Efecto Térmico Crítico</div>
+            <label>Incertidumbre por Gradiente de Temp. (u_temp) [°C]:</label>
+            <input type="number" id="t_grad" value="0.5" step="0.1">
+            <label>Sensibilidad de Humedad vs Temp. [%HR/°C]:</label>
+            <input type="number" id="h_sens" value="4.5" step="0.1">
 
-            <label>Homogeneidad en el Volumen (ΔT_h):</label>
-            <input type="number" id="u_hom" value="0.450" step="0.010">
+            <div class="section-title">Volumen y Equipo</div>
+            <label>Resolución del Higrómetro [%HR]:</label>
+            <input type="number" id="h_res" value="0.1" step="0.1">
+            <label>Homogeneidad de Humedad [%HR]:</label>
+            <input type="number" id="h_hom" value="1.2" step="0.1">
 
-            <label>Estabilidad del Sistema (ΔT_e):</label>
-            <input type="number" id="u_est" value="0.250" step="0.010">
-
-            <button class="btn-calc" onclick="calcularPresupuesto()">CALCULAR INCERTIDUMBRE</button>
+            <button class="btn-calc" onclick="calcularIncertidumbreHR()">CALCULAR INCERTIDUMBRE HR</button>
 
             <div class="result-panel">
-                <small>Incertidumbre Expandida (U)</small>
-                <h2 id="final_u">± 0.000 °C</h2>
-                <small>Nivel de Confianza: 95.45% (k=2)</small>
+                <small>Incertidumbre Expandida HR (k=2)</small>
+                <h2 id="final_u_hr">± 0.00 %HR</h2>
+                <small>Incluye efecto térmico y curva de ajuste</small>
             </div>
 
-            <button class="btn-pdf" id="btn_pdf" onclick="descargarReporteU()">EXPORTAR PRESUPUESTO PDF</button>
+            <button class="btn-pdf" id="btn_pdf" onclick="descargarReporteHR()">EXPORTAR REPORTE HR PDF</button>
         </div>
 
         <div class="panel">
-            <h3>Análisis de Contribución (Pareto de Varianza)</h3>
+            <h3>Análisis de Contribución de Varianza</h3>
             <div id="chart"></div>
         </div>
     </div>
 
     <script>
-        let uExp = 0, comps = {};
+        let uExpHR = 0, comps = {};
 
-        function calcularPresupuesto() {
-            const valCal = parseFloat(document.getElementById('u_cal').value);
-            const valRes = parseFloat(document.getElementById('u_res').value);
-            const valHom = parseFloat(document.getElementById('u_hom').value);
-            const valEst = parseFloat(document.getElementById('u_est').value);
+        function calcularIncertidumbreHR() {
+            const hCert = parseFloat(document.getElementById('h_cert').value);
+            const hFit = parseFloat(document.getElementById('h_fit').value);
+            const tGrad = parseFloat(document.getElementById('t_grad').value);
+            const hSens = parseFloat(document.getElementById('h_sens').value);
+            const hRes = parseFloat(document.getElementById('h_res').value);
+            const hHom = parseFloat(document.getElementById('h_hom').value);
 
-            // ui (Incertidumbres estándar)
-            const ui_cal = valCal / 2; // Normal
-            const ui_res = valRes / (2 * Math.sqrt(3)); // Rectangular
-            const ui_hom = valHom / Math.sqrt(3); // Rectangular
-            const ui_est = valEst / Math.sqrt(3); // Rectangular
+            // ui (estándar)
+            const ui_cert = hCert / 2;
+            const ui_fit = hFit / Math.sqrt(3);
+            const ui_res = hRes / (2 * Math.sqrt(3));
+            const ui_hom = hHom / Math.sqrt(3);
+            
+            // CONTRIBUCIÓN CRÍTICA: Efecto de temperatura sobre la HR
+            // ui_temp_effect = u_grad_temperatura * coeficiente_de_sensibilidad
+            const ui_temp_effect = (tGrad / Math.sqrt(3)) * hSens;
 
-            // Incertidumbre Combinada (uc)
-            const uc = Math.sqrt(Math.pow(ui_cal,2) + Math.pow(ui_res,2) + Math.pow(ui_hom,2) + Math.pow(ui_est,2));
-            uExp = uc * 2;
+            // Combinada
+            const ucHR = Math.sqrt(
+                Math.pow(ui_cert, 2) + 
+                Math.pow(ui_fit, 2) + 
+                Math.pow(ui_res, 2) + 
+                Math.pow(ui_hom, 2) + 
+                Math.pow(ui_temp_effect, 2)
+            );
 
-            document.getElementById('final_u').innerText = `± ${uExp.toFixed(3)} °C`;
+            uExpHR = ucHR * 2;
+            document.getElementById('final_u_hr').innerText = `± ${uExpHR.toFixed(2)} %HR`;
             document.getElementById('btn_pdf').style.display = 'block';
 
-            comps = { ui_cal, ui_res, ui_hom, ui_est };
-            dibujarPareto(ui_cal, ui_res, ui_hom, ui_est);
+            comps = { ui_cert, ui_fit, ui_res, ui_hom, ui_temp_effect };
+            dibujarGrafico(ui_cert, ui_fit, ui_res, ui_hom, ui_temp_effect);
         }
 
-        function dibujarPareto(c, r, h, e) {
+        function dibujarGrafico(c, f, r, h, t) {
             const data = [{
-                x: ['Calibración', 'Resolución', 'Homogeneidad', 'Estabilidad'],
-                y: [c*c, r*r, h*h, e*e], // Varianza para ver contribución real
+                x: ['Certificado', 'Curva Ajuste', 'Resolución', 'Homogeneidad', 'Efecto Temp'],
+                y: [c*c, f*f, r*r, h*h, t*t],
                 type: 'bar',
-                marker: { color: ['#0a192f', '#c82333', '#17a2b8', '#ffc107'] }
+                marker: { color: ['#0a192f', '#c82333', '#17a2b8', '#ffc107', '#28a745'] }
             }];
 
             Plotly.newPlot('chart', data, {
-                margin: { t: 50, b: 50, l: 50, r: 20 },
+                margin: { t: 40, b: 80, l: 50, r: 20 },
                 paper_bgcolor: 'white'
             }, { preserveDrawingBuffer: true });
         }
 
-        async function descargarReporteU() {
+        async function descargarReporteHR() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             const btn = document.getElementById('btn_pdf');
-            btn.innerText = "PROCESANDO IMAGEN..."; btn.disabled = true;
+            btn.innerText = "GENERANDO..."; btn.disabled = true;
 
             const imgData = await Plotly.toImage('chart', { format: 'png', width: 800, height: 600 });
 
             doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 35, 'F');
             doc.setTextColor(255, 255, 255); doc.setFontSize(18);
-            doc.text("PRESUPUESTO DE INCERTIDUMBRE - SEVA", 105, 15, {align: 'center'});
-            doc.setFontSize(10); doc.text("CUMPLIMIENTO ISO/IEC 17025 | MÉTODO GUM", 105, 25, {align: 'center'});
-
+            doc.text("PRESUPUESTO DE INCERTIDUMBRE HUMEDAD - SEVA", 105, 15, {align: 'center'});
+            
             doc.autoTable({
                 startY: 40,
-                head: [['FUENTE', 'VALOR', 'DIVISOR', 'ui (ESTÁNDAR)']],
+                head: [['FUENTE DE INCERTIDUMBRE', 'CONTRIBUCIÓN (ui²)', '%']],
                 body: [
-                    ['Incertidumbre del Patrón', document.getElementById('u_cal').value, '2.00', comps.ui_cal.toFixed(4)],
-                    ['Resolución del Equipo', document.getElementById('u_res').value, '3.46', comps.ui_res.toFixed(4)],
-                    ['Homogeneidad Térmica', document.getElementById('u_hom').value, '1.73', comps.ui_hom.toFixed(4)],
-                    ['Estabilidad Temporal', document.getElementById('u_est').value, '1.73', comps.ui_est.toFixed(4)]
+                    ['Certificado de Calibración', comps.ui_cert.toFixed(4), ((Math.pow(comps.ui_cert,2)/Math.pow(uExpHR/2,2))*100).toFixed(1) + '%'],
+                    ['Curva de Ajuste (Regresión)', comps.ui_fit.toFixed(4), ((Math.pow(comps.ui_fit,2)/Math.pow(uExpHR/2,2))*100).toFixed(1) + '%'],
+                    ['Efecto de Temperatura (Gradiente)', comps.ui_temp_effect.toFixed(4), ((Math.pow(comps.ui_temp_effect,2)/Math.pow(uExpHR/2,2))*100).toFixed(1) + '%'],
+                    ['Homogeneidad y Equipo', (Math.pow(comps.ui_res,2)+Math.pow(comps.ui_hom,2)).toFixed(4), '-']
                 ],
                 headStyles: { fillColor: [10, 25, 47] }
             });
@@ -136,21 +154,21 @@
             doc.addImage(imgData, 'PNG', 15, 110, 180, 100);
 
             doc.setTextColor(200, 35, 51); doc.setFontSize(14);
-            doc.text(`INCERTIDUMBRE EXPANDIDA (U): ± ${uExp.toFixed(3)} °C`, 15, 225);
+            doc.text(`INCERTIDUMBRE EXPANDIDA TOTAL: ± ${uExpHR.toFixed(2)} %HR`, 15, 225);
             
             doc.setTextColor(0); doc.setFontSize(9);
-            const nota = "La incertidumbre expandida se basa en la incertidumbre estándar combinada multiplicada por un factor de cobertura k=2 (95.45% de confianza). Las fuentes de homogeneidad y estabilidad dominan el presupuesto en validación de volúmenes.";
+            const nota = "Nota: Se ha incluido el coeficiente de sensibilidad térmica (aprox. 4.5 %HR/°C) para evaluar el impacto de la estabilidad de temperatura sobre la lectura de humedad relativa, conforme a los requisitos de validación 4.0.";
             doc.text(doc.splitTextToSize(nota, 180), 15, 235);
 
             doc.setFillColor(200, 35, 51); doc.rect(0, 280, 210, 17, 'F');
             doc.setTextColor(255, 255, 255);
             doc.text("SEVA Metrología | Director: Ing. Fabián Durán Valencia | México 2026", 105, 290, {align: 'center'});
 
-            doc.save("Presupuesto_Incertidumbre_SEVA.pdf");
-            btn.innerText = "EXPORTAR PRESUPUESTO PDF"; btn.disabled = false;
+            doc.save("Incertidumbre_HR_SEVA.pdf");
+            btn.innerText = "EXPORTAR REPORTE HR PDF"; btn.disabled = false;
         }
 
-        window.onload = calcularPresupuesto;
+        window.onload = calcularIncertidumbreHR;
     </script>
 </body>
 </html>
