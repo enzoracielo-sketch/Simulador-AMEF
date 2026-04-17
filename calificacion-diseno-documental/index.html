@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVAMETROLOGÍA - Verificación Documental DQ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --seva-red: #c82333; --blue-dark: #0a192f; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); margin: 0; padding: 15px; }
+        .header-ui { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 8px solid var(--seva-red); }
+        .main-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; max-width: 1500px; margin: auto; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h3 { color: var(--blue-dark); border-bottom: 2px solid var(--seva-red); padding-bottom: 5px; margin-top: 0; text-transform: uppercase; font-size: 1.1em; }
+        
+        .table-wrapper { max-height: 700px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82em; }
+        th { background: var(--blue-dark); color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; }
+        td { padding: 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        
+        .req-name { font-weight: bold; color: #2c3e50; }
+        .input-evidencia { width: 95%; padding: 5px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.9em; }
+        select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; width: 100%; font-weight: bold; cursor: pointer; }
+        
+        .summary-card { background: var(--blue-dark); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; }
+        .summary-card h2 { margin: 10px 0; font-size: 2rem; color: #00ffcc; }
+        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 15px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; text-transform: uppercase; transition: 0.3s; }
+        .btn-pdf:hover { background: #a51d2a; }
+    </style>
+</head>
+<body>
+
+    <div class="header-ui">
+        <div>
+            <h1 style="margin:0; color: var(--blue-dark); font-size: 1.4rem;">SEVAMETROLOGÍA</h1>
+            <small>"aprender haciendo" | Calificación de Diseño: Verificación de Soporte Documental</small>
+        </div>
+        <div style="text-align: right; font-size: 0.8em;"><strong>Fase DQ</strong><br>NOM-059-SSA1-2015</div>
+    </div>
+
+    <div class="main-grid">
+        <div class="panel">
+            <h3>Lista Maestra de Documentación Técnica</h3>
+            <div class="table-wrapper">
+                <table id="dqDocTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 250px;">Documento Requerido</th>
+                            <th>Referencia / Código de Evidencia</th>
+                            <th style="width: 120px;">Fecha Verif.</th>
+                            <th style="width: 110px;">Dictamen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Dictamen de Trazabilidad</h3>
+            <div id="statusCard" class="summary-card">
+                <small>Estatus Global del Expediente</small>
+                <h2 id="finalStatus">EXPEDIENTE COMPLETO</h2>
+                <div id="statDetail">Todos los documentos obligatorios verificados</div>
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 0.85em; color: #444; background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 5px solid #ffc107;">
+                <strong>Importante:</strong> La ausencia de cualquiera de estos documentos representa una desviación mayor en una auditoría de COFEPRIS, ya que imposibilita la reconstrucción del historial del equipo (Integridad de Datos).
+            </div>
+
+            <button class="btn-pdf" onclick="exportarDQDoc()">GENERAR REPORTE DQ DOCUMENTAL</button>
+        </div>
+    </div>
+
+    <script>
+        const documentos = [
+            "Requerimiento de usuario aprobado",
+            "Documento de propiedad del equipo",
+            "Manual de operación del equipo",
+            "Ficha técnica del equipo",
+            "Registros de capacitación",
+            "Diagrama eléctrico",
+            "Certificado de calibración de instrumentos",
+            "Registro de mantenimiento",
+            "Plano de ubicación",
+            "Programa de calibración de instrumentos",
+            "Programa de calificación de equipos",
+            "Programa de mantenimiento",
+            "Procedimiento de operación del equipo"
+        ];
+
+        function init() {
+            const body = document.getElementById('tableBody');
+            const hoy = new Date().toISOString().split('T')[0];
+
+            documentos.forEach((doc, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="req-name">${doc}</td>
+                    <td><input type="text" class="input-evidencia" id="ev_${i}" placeholder="Código o versión del documento..."></td>
+                    <td><input type="date" class="input-evidencia" id="fecha_${i}" value="${hoy}"></td>
+                    <td>
+                        <select id="dict_${i}" onchange="actualizarEstatus()">
+                            <option value="Disponible">Disponible</option>
+                            <option value="No Disponible">No Disponible</option>
+                        </select>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+            actualizarEstatus();
+        }
+
+        function actualizarEstatus() {
+            const selects = document.querySelectorAll('select');
+            let faltantes = 0;
+            selects.forEach(s => {
+                if(s.value === "No Disponible") {
+                    faltantes++;
+                    s.style.color = "#c82333";
+                } else {
+                    s.style.color = "#28a745";
+                }
+            });
+
+            const statusH2 = document.getElementById('finalStatus');
+            const detail = document.getElementById('statDetail');
+            const card = document.getElementById('statusCard');
+
+            if(faltantes > 0) {
+                statusH2.innerText = "EXPEDIENTE INCOMPLETO";
+                statusH2.style.color = "#ff4d4d";
+                detail.innerText = `Faltan ${faltantes} documentos críticos para CD`;
+                card.style.border = "2px solid #ff4d4d";
+            } else {
+                statusH2.innerText = "EXPEDIENTE COMPLETO";
+                statusH2.style.color = "#00ffcc";
+                detail.innerText = "Todos los documentos obligatorios verificados";
+                card.style.border = "2px solid #00ffcc";
+            }
+        }
+
+        async function exportarDQDoc() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255); doc.setFontSize(14);
+            doc.text("CALIFICACIÓN DE DISEÑO: VERIFICACIÓN DOCUMENTAL", 105, 15, {align:'center'});
+            doc.setFontSize(9); doc.text("SEVAMETROLOGÍA - CUMPLIMIENTO NOM-059-SSA1-2015", 105, 22, {align:'center'});
+
+            const rows = documentos.map((d, i) => [
+                d, 
+                document.getElementById(`ev_${i}`).value || "N/A",
+                document.getElementById(`fecha_${i}`).value,
+                document.getElementById(`dict_${i}`).value
+            ]);
+
+            doc.autoTable({
+                startY: 35,
+                head: [['Documento', 'Referencia / Evidencia', 'Fecha', 'Dictamen']],
+                body: rows,
+                headStyles: { fillColor: [10, 25, 47] },
+                styles: { fontSize: 8 }
+            });
+
+            doc.save("DQ_Verificacion_Documental.pdf");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
