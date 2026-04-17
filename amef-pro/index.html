@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVAMETROLOGÍA - Almacén Digital Optimizada</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --blue-dark: #0a192f; --seva-red: #c82333; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); margin: 0; padding: 10px; height: 100vh; overflow: hidden; }
+        .header-ui { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-left: 8px solid var(--seva-red); }
+        .main-grid { display: grid; grid-template-columns: 420px 1fr; gap: 15px; height: calc(100vh - 100px); }
+        .panel { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .sensor-list { flex: 1; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background: #fff; margin-bottom: 10px; }
+        .sensor-item { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px; margin-bottom: 8px; font-size: 0.8em; position: relative; border-left: 4px solid #ccc; }
+        .risk-badge { position: absolute; top: 10px; right: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.7em; color: white; }
+        input { width: 42px; padding: 2px; border: 1px solid #ccc; border-radius: 3px; }
+        .btn-add { background: var(--blue-dark); color: white; padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-pdf { background: var(--seva-red); color: white; width: 100%; padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        #chart { flex: 1; border-radius: 8px; background: white; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+    <div class="header-ui">
+        <div>
+            <h1 style="margin:0; color: var(--blue-dark); font-size: 1.3rem;">SEVAMETROLOGÍA</h1>
+            <small>"aprender haciendo" | Simulación de Riesgo en Almacén (10 Bins por Rack)</small>
+        </div>
+        <div style="text-align: right; font-size: 0.8em;"><strong>LAYOUT SIMPLIFICADO</strong><br>Optimización de Renderizado</div>
+    </div>
+
+    <div class="main-grid">
+        <div class="panel">
+            <button class="btn-add" onclick="agregarSensor()">+ UBICAR SENSOR EN RACK</button>
+            <div class="sensor-list" id="sensorList"></div>
+            <button class="btn-pdf" onclick="generarReporte()">DESCARGAR REPORTE AMEF</button>
+        </div>
+        <div class="panel" style="padding:0;"><div id="chart"></div></div>
+    </div>
+
+    <script>
+        let sensores = [
+            { id: "S-01", x: 1, y: 5, z: 2, npr: 0, nivel: "", color: "" },
+            { id: "S-02", x: 16, y: 25, z: 8, npr: 0, nivel: "", color: "" }
+        ];
+
+        function calcularRiesgo(s) {
+            let G = (s.z > 7) ? 10 : (s.z < 2) ? 6 : 4;
+            let O = (s.y < 4 || s.y > 26) ? 9 : 3;
+            let npr = G * O * 5;
+            let nivel = npr >= 300 ? "CRÍTICO" : npr >= 150 ? "MODERADO" : "BAJO";
+            let color = npr >= 300 ? "#e74c3c" : npr >= 150 ? "#f39c12" : "#27ae60";
+            return { npr, nivel, color };
+        }
+
+        function agregarSensor() {
+            if (sensores.length >= 20) return;
+            const id = `S-${(sensores.length + 1).toString().padStart(2, '0')}`;
+            sensores.push({ id, x: 10, y: 15, z: 4, npr: 0, nivel: "", color: "" });
+            actualizarInterfaz();
+        }
+
+        function actualizarDato(i, campo, val) {
+            sensores[i][campo] = parseFloat(val);
+            actualizarInterfaz();
+        }
+
+        function actualizarInterfaz() {
+            sensores.forEach(s => Object.assign(s, calcularRiesgo(s)));
+            renderList();
+            draw3D();
+        }
+
+        function renderList() {
+            const list = document.getElementById('sensorList');
+            list.innerHTML = '';
+            sensores.forEach((s, i) => {
+                const item = document.createElement('div');
+                item.className = 'sensor-item';
+                item.style.borderLeftColor = s.color;
+                item.innerHTML = `
+                    <span class="risk-badge" style="background:${s.color}">${s.nivel}</span>
+                    <strong>${s.id}</strong> | NPR: <b>${s.npr}</b><br>
+                    X: <input type="number" step="0.5" value="${s.x}" onchange="actualizarDato(${i}, 'x', this.value)">
+                    Y: <input type="number" step="0.5" value="${s.y}" onchange="actualizarDato(${i}, 'y', this.value)">
+                    Z: <input type="number" step="0.5" value="${s.z}" onchange="actualizarDato(${i}, 'z', this.value)">
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function draw3D() {
+            let traces = [];
+            const xBases = [1, 4, 7, 10, 13, 16];
+            
+            xBases.forEach((x) => {
+                [x, x + 1.2].forEach(posX => {
+                    // Estructura Rack (Equeleto)
+                    traces.push({
+                        type: 'scatter3d', mode: 'lines', showlegend: false,
+                        line: {color: '#bdc3c7', width: 2},
+                        x: [posX, posX+1, posX+1, posX, posX, posX, posX+1, posX+1, posX, posX],
+                        y: [2, 2, 28, 28, 2, 2, 2, 28, 28, 2],
+                        z: [0, 0, 0, 0, 0, 10, 10, 10, 10, 0]
+                    });
+                    // Niveles (10 Bins por Rack)
+                    for(let level = 1; level <= 10; level++) {
+                        traces.push({
+                            type: 'scatter3d', mode: 'lines', showlegend: false,
+                            line: {color: '#dfe6e9', width: 1},
+                            x: [posX, posX+1], y: [2, 2], z: [level, level]
+                        });
+                    }
+                });
+            });
+
+            // Capa de Sensores
+            traces.push({
+                x: sensores.map(s => s.x), y: sensores.map(s => s.y), z: sensores.map(s => s.z),
+                mode: 'markers+text', type: 'scatter3d', name: 'Sensores',
+                text: sensores.map(s => s.id),
+                marker: { size: 7, color: sensores.map(s => s.color), symbol: 'diamond', line: {color: 'white', width: 1} }
+            });
+
+            const layout = {
+                scene: {
+                    xaxis: {range: [0, 20], title: 'Ancho'},
+                    yaxis: {range: [0, 30], title: 'Largo'},
+                    zaxis: {range: [0, 12], title: 'Altura'},
+                    aspectratio: {x: 1, y: 1.5, z: 0.6}
+                },
+                margin: {l:0, r:0, b:0, t:0}
+            };
+
+            Plotly.newPlot('chart', traces, layout, {preserveDrawingBuffer: true});
+        }
+
+        async function generarReporte() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const img = await Plotly.toImage('chart', {format: 'png', width: 1200, height: 800});
+
+            doc.setFillColor(10, 25, 47); doc.rect(0, 0, 297, 30, 'F');
+            doc.setTextColor(255); doc.setFontSize(16);
+            doc.text("REPORTE DE RIESGO AMEF Y LAYOUT DE SENSORES", 148, 15, {align:'center'});
+            doc.setFontSize(9); doc.text("SEVAMETROLOGÍA | ANALISIS DE 10 NIVELES DE CARGA", 148, 22, {align:'center'});
+
+            doc.addImage(img, 'PNG', 10, 35, 180, 120);
+            
+            const rows = sensores.map(s => [s.id, `Z:${s.z}m`, s.npr, s.nivel]);
+            doc.autoTable({
+                startY: 35, margin: {left: 200}, tableWidth: 80,
+                head: [['ID', 'ALTURA', 'NPR', 'RIESGO']],
+                body: rows,
+                headStyles: {fillColor: [10, 25, 47]},
+                styles: {fontSize: 8}
+            });
+
+            doc.save("Reporte_AMEF_Optimizado.pdf");
+        }
+
+        window.onload = actualizarInterfaz;
+    </script>
+</body>
+</html>
