@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVAMETROLOGÍA - Análisis de Uniformidad y MKT</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --seva-red: #c82333; --blue-dark: #0a192f; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); margin: 0; padding: 20px; }
+        .container { max-width: 1300px; margin: auto; display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+        .panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header-ui { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 8px solid var(--seva-red); display: flex; justify-content: space-between; align-items: center; }
+        
+        .mkt-display { background: var(--blue-dark); color: #ffd700; padding: 20px; border-radius: 8px; text-align: center; margin-top: 15px; border: 2px solid #ffd700; }
+        .mkt-val { font-size: 2.2rem; font-weight: bold; margin: 5px 0; }
+        
+        .control-group { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        label { display: block; font-weight: bold; font-size: 0.85em; margin-bottom: 8px; color: var(--blue-dark); }
+        select, input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 10px; }
+        
+        .stats-table { width: 100%; font-size: 0.8em; margin-top: 10px; border-collapse: collapse; }
+        .stats-table td { padding: 5px; border-bottom: 1px solid #eee; }
+
+        .btn-calc { background: var(--seva-red); color: white; border: none; padding: 15px; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        #chart { height: 550px; background: white; border-radius: 8px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+
+<div class="header-ui">
+    <div>
+        <h1 style="margin:0; font-size: 1.5rem; color: var(--blue-dark);">SEVAMETROLOGÍA</h1>
+        <small>"aprender haciendo" | Evaluación de Uniformidad Crítica y MKT</small>
+    </div>
+    <div style="text-align:right"><strong>ANÁLISIS DE INCURSIÓN</strong><br>USP <1079> / <1160></div>
+</div>
+
+<div class="container">
+    <div class="panel">
+        <h3>Simulador de Inestabilidad</h3>
+        <div class="control-group">
+            <label>Grado de Oscilación (°C):</label>
+            <input type="range" id="osc_level" min="0.5" max="5.0" step="0.5" value="2.5" oninput="simularInestabilidad()">
+            
+            <label>Puntos fuera de rango (%):</label>
+            <div id="out_percent" style="font-weight: bold; color: var(--seva-red);">0%</div>
+        </div>
+
+        <div class="mkt-display">
+            <small>TEMPERATURA MEDIA CINÉTICA (MKT)</small>
+            <div id="mkt_result" class="mkt-val">-- °C</div>
+            <div id="mkt_status" style="font-size: 0.85em;">Analizando uniformidad...</div>
+        </div>
+
+        <table class="stats-table">
+            <tr><td>Temp. Máxima:</td><td id="t_max" style="font-weight:bold;">--</td></tr>
+            <tr><td>Temp. Mínima:</td><td id="t_min" style="font-weight:bold;">--</td></tr>
+            <tr><td>Promedio Aritmético:</td><td id="t_avg" style="font-weight:bold;">--</td></tr>
+        </table>
+
+        <div style="margin-top:20px">
+            <label>Dictamen de Armonización:</label>
+            <textarea id="eval_tecnica" style="width:100%; height:80px; padding:8px; border-radius:4px;" placeholder="Justifique si estas excursiones intermitentes son aceptables basado en MKT..."></textarea>
+        </div>
+
+        <button class="btn-calc" style="margin-top:10px" onclick="exportarPDF_Uniformidad()">Exportar Reporte de Mapeo</button>
+    </div>
+
+    <div class="panel" style="padding:10px;">
+        <div id="chart"></div>
+    </div>
+</div>
+
+<script>
+    let tempArray = [];
+    const R = 0.0083144; 
+    const ΔH = 83.144; // Energía de activación estándar
+
+    function simularInestabilidad() {
+        const osc = parseFloat(document.getElementById('osc_level').value);
+        let t = [], y = [];
+        tempArray = [];
+        let fuera = 0;
+
+        for (let i = 0; i < 144; i++) {
+            t.push(i);
+            // Generar una tendencia que oscila sobre el límite superior
+            let val = 7.0 + (Math.sin(i / 3) * osc) + (Math.random() * 0.5);
+            
+            if(val > 8.0 || val < 2.0) fuera++;
+            
+            let vFixed = parseFloat(val.toFixed(2));
+            y.push(vFixed);
+            tempArray.push(vFixed + 273.15);
+        }
+
+        // Cálculos estadísticos
+        const max = Math.max(...y);
+        const min = Math.min(...y);
+        const avg = y.reduce((a, b) => a + b, 0) / y.length;
+        const porc = (fuera / 144) * 100;
+
+        document.getElementById('t_max').innerText = `${max} °C`;
+        document.getElementById('t_min').innerText = `${min} °C`;
+        document.getElementById('t_avg').innerText = `${avg.toFixed(2)} °C`;
+        document.getElementById('out_percent').innerText = `${porc.toFixed(1)}%`;
+
+        // Cálculo de MKT
+        const n = tempArray.length;
+        const sumExp = tempArray.reduce((acc, T) => acc + Math.exp(-ΔH / (R * T)), 0);
+        const mkt_c = ((ΔH / R) / -Math.log(sumExp / n)) - 273.15;
+
+        document.getElementById('mkt_result').innerText = `${mkt_c.toFixed(2)} °C`;
+        
+        const status = document.getElementById('mkt_status');
+        status.innerText = mkt_c > 8 ? "MKT FUERA DE RANGO" : "MKT DENTRO DE LÍMITES";
+        status.style.color = mkt_c > 8 ? "#ff4d4d" : "#ffd700";
+
+        const traceT = { x: t, y: y, name: 'Sensor Crítico', type: 'scatter', line: {color: '#c82333', width: 2} };
+        const l_up = { x: [0, 144], y: [8, 8], name: 'LSC (8.0°C)', line: {dash: 'dash', color: 'black'} };
+        const l_down = { x: [0, 144], y: [2, 2], name: 'LIC (2.0°C)', line: {dash: 'dash', color: 'black'} };
+
+        const layout = {
+            title: 'Análisis de Incursiones por Falta de Uniformidad',
+            xaxis: { title: 'Tiempo (Intervalos 10 min)' },
+            yaxis: { title: 'Temperatura (°C)', range: [0, 15] },
+            shapes: [{ type: 'rect', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: 2, y1: 8, fillcolor: '#d4edda', opacity: 0.2, line: {width: 0} }]
+        };
+
+        Plotly.newPlot('chart', [traceT, l_up, l_down], layout, {preserveDrawingBuffer: true});
+    }
+
+    async function exportarPDF_Uniformidad() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const img = await Plotly.toImage('chart', {format: 'png', width: 1000, height: 600});
+
+        doc.setFillColor(10, 25, 47); doc.rect(0, 0, 297, 30, 'F');
+        doc.setTextColor(255); doc.setFontSize(16);
+        doc.text("REPORTE DE UNIFORMIDAD TÉRMICA Y ESTRÉS CINÉTICO (MKT)", 148, 15, {align:'center'});
+
+        doc.addImage(img, 'PNG', 10, 35, 180, 110);
+        
+        doc.setTextColor(0); doc.setFontSize(10);
+        doc.text("RESUMEN ESTADÍSTICO:", 200, 45);
+        doc.text(`T. Máxima: ${document.getElementById('t_max').innerText}`, 200, 52);
+        doc.text(`T. Mínima: ${document.getElementById('t_min').innerText}`, 200, 58);
+        doc.text(`Promedio: ${document.getElementById('t_avg').innerText}`, 200, 64);
+        doc.text(`Fuera de Rango: ${document.getElementById('out_percent').innerText}`, 200, 70);
+        
+        doc.setFontSize(14); doc.text(`MKT: ${document.getElementById('mkt_result').innerText}`, 200, 85);
+        
+        doc.setFontSize(9); doc.text("DICTAMEN TÉCNICO:", 200, 100);
+        const eval = document.getElementById('eval_tecnica').value || "Pendiente.";
+        doc.text(doc.splitTextToSize(eval, 80), 200, 108);
+
+        doc.save("Reporte_Uniformidad_MKT.pdf");
+    }
+
+    window.onload = simularInestabilidad;
+</script>
+</body>
+</html>
