@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>SEVAMETROLOGÍA - Examen Final de Armonización</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root { --seva-red: #c82333; --blue-dark: #0a192f; --bg-gray: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-gray); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 10px solid var(--seva-red); }
+        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        .student-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #ddd; }
+        .student-info input { width: 90%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+        
+        h3 { color: var(--seva-red); border-bottom: 2px solid #eee; padding-bottom: 5px; text-transform: uppercase; font-size: 1.1em; }
+        
+        .question-block { margin-bottom: 25px; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #eee; border-left: 5px solid #ddd; transition: 0.3s; }
+        .question-block:hover { border-left-color: var(--seva-red); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .question-text { font-weight: bold; color: var(--blue-dark); margin-bottom: 12px; display: block; font-size: 1.05em; }
+        
+        .problem-box { background: #eef2f7; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px dashed var(--blue-dark); color: var(--blue-dark); font-size: 0.95em; }
+        
+        textarea { width: 100%; height: 90px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 1em; resize: vertical; box-sizing: border-box; }
+        textarea:focus { border-color: var(--seva-red); outline: none; background: #fffdfd; }
+        
+        .btn-main { background: var(--seva-red); color: white; border: none; padding: 20px; width: 100%; font-size: 1.2em; font-weight: bold; border-radius: 6px; cursor: pointer; text-transform: uppercase; transition: 0.3s; margin-top: 20px; }
+        .btn-main:hover { background: var(--blue-dark); transform: translateY(-2px); }
+        
+        footer { text-align: center; margin-top: 30px; font-size: 0.85em; color: #777; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 style="color: var(--blue-dark); margin:0; letter-spacing: 2px;">EXAMEN FINAL DE ARMONIZACIÓN</h1>
+        <p style="margin:5px 0; color: #666;">Ingeniería de Validación y Metrología 4.0 | SEVAMETROLOGÍA</p>
+    </div>
+
+    <div class="student-info">
+        <div>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Nombre del Alumno:</label>
+            <input type="text" id="student_name" placeholder="Ej. Juan Pérez" required>
+        </div>
+        <div>
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Empresa / Organización:</label>
+            <input type="text" id="student_org" placeholder="Empresa Farmacéutica" required>
+        </div>
+    </div>
+
+    <h3>I. Teoría y Normatividad (OMS / USP)</h3>
+    <div class="question-block">
+        <span class="question-text">1. Explique la diferencia fundamental entre el enfoque de la USP <1079> y la OMS 961 respecto al mapeo térmico.</span>
+        <textarea id="q1" placeholder="Describa diferencias en tiempos, frecuencias y criterios..."></textarea>
+    </div>
+    <div class="question-block">
+        <span class="question-text">2. Si el tiempo de recuperación de T excede el URS por 2 min en la PQ, ¿cuál es el procedimiento técnico a seguir?</span>
+        <textarea id="q2" placeholder="Análisis de impacto, desviación, CAPA..."></textarea>
+    </div>
+    <div class="question-block">
+        <span class="question-text">3. Defina el principio ALCOA+ y su relación con el Audit Trail según la NOM-059.</span>
+        <textarea id="q3"></textarea>
+    </div>
+
+    <h3>II. Análisis de Riesgos (AMEF)</h3>
+    <div class="question-block">
+        <span class="question-text">4. ¿Cómo impacta la estratificación térmica en la valoración de Gravedad (G) del AMEF?</span>
+        <textarea id="q4"></textarea>
+    </div>
+    <div class="question-block">
+        <span class="question-text">5. Proponga tres acciones de mitigación para un bin con NPR > 250 sin mover el producto.</span>
+        <textarea id="q5"></textarea>
+    </div>
+
+    <h3>III. Problemas de Cálculo y Dictamen</h3>
+    <div class="question-block">
+        <div class="problem-box">
+            <strong>Problema 9: Cálculo de NPR Crítico</strong><br>
+            Sensor nivel 10 (Z=9m). Puerta abierta 20min/h.<br>
+            Valores asignados: <b>G=9, O=8, D=4</b>. Calcule el NPR y recomiende acción inmediata.
+        </div>
+        <textarea id="q9" placeholder="Muestre su operación y el nivel de riesgo resultante..."></textarea>
+    </div>
+
+    <div class="question-block">
+        <div class="problem-box">
+            <strong>Problema 10: Presupuesto de Incertidumbre (GUM)</strong><br>
+            u_cal = 0.05°C | u_res = 0.1°C (dist. rectangular) | Repetibilidad (s) = 0.08°C (n=10).<br>
+            Calcule Incertidumbre Combinada (uc) e Expandida (U) con k=2.
+        </div>
+        <textarea id="q10" placeholder="Desarrolle las fórmulas de uc y U..."></textarea>
+    </div>
+
+    <button type="button" class="btn-main" onclick="procesarExamen()">Finalizar, Descargar y Enviar Reporte</button>
+
+    <footer>
+        "Aprender Haciendo" | sevametrologia@outlook.com | México 2026
+    </footer>
+</div>
+
+<script>
+    async function procesarExamen() {
+        const name = document.getElementById('student_name').value;
+        const org = document.getElementById('student_org').value;
+
+        if(!name || !org) {
+            alert("Por favor, ingresa tu nombre y empresa antes de finalizar.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Encabezado PDF
+        doc.setFillColor(10, 25, 47); doc.rect(0, 0, 210, 35, 'F');
+        doc.setTextColor(255); doc.setFontSize(18);
+        doc.text("REPORTE DE EXAMEN FINAL - SEVAM", 105, 15, {align:'center'});
+        doc.setFontSize(10);
+        doc.text(`ALUMNO: ${name.toUpperCase()} | EMPRESA: ${org.toUpperCase()}`, 105, 25, {align:'center'});
+
+        let y = 45;
+        doc.setTextColor(0);
+        
+        // Recopilar respuestas para el PDF
+        for(let i=1; i<=10; i++){
+            let el = document.getElementById(`q${i}`);
+            if(el) {
+                let resp = el.value || "Sin respuesta.";
+                if(y > 270) { doc.addPage(); y = 20; }
+                doc.setFont(undefined, 'bold');
+                doc.text(`Pregunta ${i}:`, 15, y);
+                y += 6;
+                doc.setFont(undefined, 'normal');
+                let lines = doc.splitTextToSize(resp, 180);
+                doc.text(lines, 15, y);
+                y += (lines.length * 6) + 10;
+            }
+        }
+
+        // Descargar el PDF para el alumno
+        doc.save(`Examen_Final_SEVAM_${name.replace(/\s+/g, '_')}.pdf`);
+
+        // ENVIAR POR CORREO (Método Seguro mailto)
+        const subject = encodeURIComponent(`Examen Final SEVAM - ${name}`);
+        const body = encodeURIComponent(`Hola Ricardo,\n\nAdjunto el aviso de finalización de examen de ${name} de la empresa ${org}.\n\nEl alumno ha descargado su PDF de respuestas y lo enviará a continuación.`);
+        
+        window.location.href = `mailto:sevametrologia@outlook.com?subject=${subject}&body=${body}`;
+        
+        alert("¡Proceso completado!\n1. Se ha descargado tu examen en PDF.\n2. Se abrirá tu correo para notificar a SEVAMETROLOGÍA.");
+    }
+</script>
+</body>
+</html>
