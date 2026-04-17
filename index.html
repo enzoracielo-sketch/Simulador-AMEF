@@ -9,131 +9,65 @@
             --seva-red: #c82333;
             --blue-dark: #0a192f;
             --white: #ffffff;
-            --glass: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.12);
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
-            min-height: 100%;
+            margin: 0; padding: 0; min-height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--blue-dark);
-            color: var(--white);
+            background-color: var(--blue-dark); color: var(--white);
         }
 
         .main-hero {
-            background-image: linear-gradient(rgba(10, 25, 47, 0.92), rgba(10, 25, 47, 0.88)), 
+            background-image: linear-gradient(rgba(10, 25, 47, 0.94), rgba(10, 25, 47, 0.9)), 
                               url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=2000');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
+            background-size: cover; background-position: center; background-attachment: fixed;
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 30px 20px;
         }
 
-        .header-section {
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header-section h1 {
-            font-size: 3.2rem;
-            margin: 0;
-            letter-spacing: 4px;
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-
-        .header-section .tagline {
-            font-size: 1.4rem;
-            color: var(--seva-red);
-            font-weight: 400;
-            font-style: italic;
-            margin-top: 5px;
-        }
+        .header-section { margin-bottom: 25px; text-align: center; }
+        .header-section h1 { font-size: 3rem; margin: 0; letter-spacing: 4px; font-weight: 900; text-transform: uppercase; }
+        .header-section .tagline { font-size: 1.3rem; color: var(--seva-red); font-weight: 400; font-style: italic; }
 
         .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 1400px;
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px; width: 100%; max-width: 1500px;
         }
 
         .tool-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: var(--white);
+            background: var(--glass); backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1); padding: 18px; border-radius: 10px;
+            text-decoration: none; color: var(--white);
             transition: 0.3s all cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
             border-top: 4px solid transparent;
         }
 
         .tool-card:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-top: 4px solid var(--seva-red);
-            transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.18); border-top: 4px solid var(--seva-red);
+            transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4);
         }
 
-        /* Estilos por categoría */
-        .card-crit { border-top-color: var(--seva-red); }
-        .card-new { border-top-color: #00ffcc; }
-        .card-blue { border-top-color: #007bff; }
-        .card-gold { border-top-color: #ffd700; background: rgba(255, 215, 0, 0.05); }
+        /* Colores por Proceso */
+        .card-red { border-top-color: var(--seva-red); } /* Riesgos/Estrategia */
+        .card-blue { border-top-color: #007bff; } /* Instalación/Metrología */
+        .card-green { border-top-color: #28a745; } /* Calificación Dinámica */
+        .card-purple { border-top-color: #a855f7; } /* Análisis de Datos */
+        .card-gold { border-top-color: #ffd700; background: rgba(255, 215, 0, 0.08); } /* Cierre */
 
-        .tool-card i {
-            font-size: 2.2rem;
-            margin-bottom: 12px;
-            color: var(--seva-red);
-        }
-
+        .tool-card i { font-size: 2rem; margin-bottom: 10px; color: var(--seva-red); }
         .card-gold i { color: #ffd700; }
+        .card-purple i { color: #a855f7; }
 
-        .tool-card h2 {
-            font-size: 1rem;
-            margin: 8px 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .tool-card h2 { font-size: 0.85rem; margin: 5px 0; text-transform: uppercase; letter-spacing: 1px; }
+        .tool-card p { font-size: 0.75rem; opacity: 0.8; line-height: 1.3; margin-bottom: 12px; flex-grow: 1; }
 
-        .tool-card p {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            line-height: 1.4;
-            margin-bottom: 15px;
-            flex-grow: 1;
-        }
-
-        .badge {
-            font-size: 0.65rem;
-            background: var(--seva-red);
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .badge-gold { background: #ffd700; color: #000; }
+        .badge { font-size: 0.6rem; background: var(--seva-red); padding: 2px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
         .badge-alt { background: #007bff; }
-        .badge-check { background: #28a745; }
+        .badge-purple { background: #a855f7; }
 
-        footer {
-            margin-top: 40px;
-            font-size: 0.75rem;
-            opacity: 0.6;
-            text-align: center;
-        }
+        footer { margin-top: 30px; font-size: 0.7rem; opacity: 0.5; text-align: center; }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -142,79 +76,99 @@
     <div class="main-hero">
         <div class="header-section">
             <h1>SEVAMETROLOGÍA</h1>
-            <div class="tagline">"aprender haciendo" | Taller de Armonización 2026</div>
+            <div class="tagline">"aprender haciendo" | Suite de Validación 2026</div>
         </div>
 
         <div class="tools-grid">
-            <a href="clasificacion-urs/index.html" class="tool-card card-crit">
-                <i class="fas fa-file-contract"></i>
+            <a href="clasificacion-urs/index.html" class="tool-card card-red">
+                <i class="fas fa-clipboard-check"></i>
                 <h2>Gestión URS</h2>
-                <p>Clasificación de requerimientos técnicos mandatorios y deseables.</p>
-                <div class="badge">FASE 1</div>
+                <p>Armonización de requerimientos mandatorios y normativos.</p>
+                <div class="badge">ESTRATEGIA</div>
+            </a>
+
+            <a href="amef/index.html" class="tool-card card-red">
+                <i class="fas fa-shield-alt"></i>
+                <h2>AMEF Sistemas</h2>
+                <p>Análisis de fallos en componentes y equipos individuales.</p>
+                <div class="badge">ESTÁNDAR</div>
+            </a>
+
+            <a href="amef-pro/index.html" class="tool-card card-red">
+                <i class="fas fa-map-marked-alt"></i>
+                <h2>AMEF Pro (20 Pts)</h2>
+                <p>Mapeo de riesgos masivo con Layout 3D de hileras.</p>
+                <div class="badge">AVANZADO</div>
             </a>
 
             <a href="auditoria-iq/index.html" class="tool-card card-blue">
                 <i class="fas fa-tools"></i>
                 <h2>Auditoría IQ</h2>
-                <p>Inspección física y documental de la instalación del activo.</p>
-                <div class="badge badge-alt">INSTALACIÓN</div>
-            </a>
-
-            <a href="verificacion-oq/index.html" class="tool-card card-new">
-                <i class="fas fa-cogs"></i>
-                <h2>Verificación OQ</h2>
-                <p>Pruebas de funcionalidad y estabilidad térmica en vacío.</p>
-                <div class="badge badge-check">OPERACIÓN</div>
-            </a>
-
-            <a href="verificacion-pq/index.html" class="tool-card card-new">
-                <i class="fas fa-boxes"></i>
-                <h2>Verificación PQ</h2>
-                <p>Pruebas de desempeño bajo condiciones de carga real.</p>
-                <div class="badge badge-check">DESEMPEÑO</div>
-            </a>
-
-            <a href="amef/index.html" class="tool-card card-blue">
-                <i class="fas fa-shield-virus"></i>
-                <h2>AMEF Sistemas</h2>
-                <p>Análisis de fallos en componentes y sistemas críticos.</p>
-                <div class="badge badge-alt">RIESGOS</div>
-            </a>
-
-            <a href="amef-pro/index.html" class="tool-card card-crit">
-                <i class="fas fa-warehouse"></i>
-                <h2>AMEF Pro (20 Pts)</h2>
-                <p>Mapeo masivo con Layout 3D de 6 hileras de racks industriales.</p>
-                <div class="badge">AVANZADO</div>
+                <p>Verificación física y documental de la instalación.</p>
+                <div class="badge badge-alt">FASE 1</div>
             </a>
 
             <a href="dkd/index.html" class="tool-card card-blue">
                 <i class="fas fa-dice-d20"></i>
                 <h2>DKD-R 5-7</h2>
-                <p>Caracterización de volumen útil y uniformidad térmica.</p>
-                <div class="badge badge-alt">METROLOGÍA</div>
+                <p>Caracterización de volumen útil y uniformidad.</p>
+                <div class="badge badge-alt">NORMATIVA</div>
             </a>
 
             <a href="incertidumbre/index.html" class="tool-card card-blue">
-                <i class="fas fa-chart-area"></i>
-                <h2>Incertidumbre</h2>
-                <p>Presupuesto GUM Dual de Temperatura y Humedad.</p>
+                <i class="fas fa-square-root-alt"></i>
+                <h2>Incertidumbre GUM</h2>
+                <p>Presupuesto dual de Temperatura y Humedad.</p>
                 <div class="badge badge-alt">CÁLCULO</div>
+            </a>
+
+            <a href="verificacion-oq/index.html" class="tool-card card-green">
+                <i class="fas fa-vial"></i>
+                <h2>Verificación OQ</h2>
+                <p>Pruebas funcionales y estabilidad térmica en vacío.</p>
+                <div class="badge">FASE 2</div>
+            </a>
+
+            <a href="verificacion-pq/index.html" class="tool-card card-green">
+                <i class="fas fa-box"></i>
+                <h2>Verificación PQ</h2>
+                <p>Desempeño bajo condiciones de carga real.</p>
+                <div class="badge">FASE 3</div>
+            </a>
+
+            <a href="analisis-tendencias/index.html" class="tool-card card-purple">
+                <i class="fas fa-chart-line"></i>
+                <h2>Tendencias</h2>
+                <p>Análisis de estabilidad y detección de desviaciones.</p>
+                <div class="badge badge-purple">ANÁLISIS</div>
+            </a>
+
+            <a href="tendencias-red-fria/index.html" class="tool-card card-purple">
+                <i class="fas fa-snowflake"></i>
+                <h2>MKT Red Fría</h2>
+                <p>Temperatura Media Cinética bajo USP <1160>.</p>
+                <div class="badge badge-purple">MKT</div>
+            </a>
+
+            <a href="tendencias-uniformidad-mkt/index.html" class="tool-card card-purple">
+                <i class="fas fa-wave-square"></i>
+                <h2>Inestabilidad</h2>
+                <p>Evaluación de incursiones intermitentes (MKT).</p>
+                <div class="badge badge-purple">SISTÉMICO</div>
             </a>
 
             <a href="examen-final/index.html" class="tool-card card-gold">
                 <i class="fas fa-graduation-cap"></i>
-                <h2>Evaluación Final</h2>
-                <p>Examen de competencias, dictamen técnico y envío de resultados.</p>
-                <div class="badge badge-gold">CERTIFICACIÓN</div>
+                <h2>Certificación</h2>
+                <p>Examen final de competencias y dictamen técnico.</p>
+                <div class="badge" style="background:#ffd700; color:#000">FINAL</div>
             </a>
         </div>
 
         <footer>
-            © 2026 SEVAMETROLOGÍA | Ing. Fabián Durán Valencia | Ciudad de México<br>
+            © 2026 SEVAMETROLOGÍA | Ing. Fabián Durán Valencia | México<br>
             Acreditando Criterios según OMS 961, USP 1079 y NOM-059
         </footer>
     </div>
-
 </body>
 </html>
