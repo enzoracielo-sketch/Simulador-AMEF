@@ -35,29 +35,30 @@
         }
 
         .header-section {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             text-align: center;
         }
 
         .header-section h1 {
-            font-size: 3.5rem;
+            font-size: 3.2rem;
             margin: 0;
-            letter-spacing: 5px;
+            letter-spacing: 4px;
             font-weight: 900;
             text-transform: uppercase;
         }
 
         .header-section .tagline {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             color: var(--seva-red);
             font-weight: 400;
             font-style: italic;
+            margin-top: 5px;
         }
 
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
             width: 100%;
             max-width: 1400px;
         }
@@ -66,7 +67,7 @@
             background: var(--glass);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 25px 20px;
+            padding: 20px;
             border-radius: 12px;
             text-decoration: none;
             color: var(--white);
@@ -81,29 +82,33 @@
         .tool-card:hover {
             background: rgba(255, 255, 255, 0.15);
             border-top: 4px solid var(--seva-red);
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.4);
         }
 
-        .card-new { border-top: 4px solid #00ffcc; }
-        .card-crit { border-top: 4px solid var(--seva-red); }
-        .card-blue { border-top: 4px solid #007bff; }
+        /* Estilos por categoría */
+        .card-crit { border-top-color: var(--seva-red); }
+        .card-new { border-top-color: #00ffcc; }
+        .card-blue { border-top-color: #007bff; }
+        .card-gold { border-top-color: #ffd700; background: rgba(255, 215, 0, 0.05); }
 
         .tool-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+            font-size: 2.2rem;
+            margin-bottom: 12px;
             color: var(--seva-red);
         }
 
+        .card-gold i { color: #ffd700; }
+
         .tool-card h2 {
-            font-size: 1.1rem;
-            margin: 10px 0;
+            font-size: 1rem;
+            margin: 8px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .tool-card p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             opacity: 0.8;
             line-height: 1.4;
             margin-bottom: 15px;
@@ -111,20 +116,21 @@
         }
 
         .badge {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             background: var(--seva-red);
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 4px;
             font-weight: bold;
             text-transform: uppercase;
         }
 
+        .badge-gold { background: #ffd700; color: #000; }
         .badge-alt { background: #007bff; }
         .badge-check { background: #28a745; }
 
         footer {
-            margin-top: 50px;
-            font-size: 0.8rem;
+            margin-top: 40px;
+            font-size: 0.75rem;
             opacity: 0.6;
             text-align: center;
         }
@@ -136,70 +142,77 @@
     <div class="main-hero">
         <div class="header-section">
             <h1>SEVAMETROLOGÍA</h1>
-            <div class="tagline">"aprender haciendo" | Metrología 4.0</div>
+            <div class="tagline">"aprender haciendo" | Taller de Armonización 2026</div>
         </div>
 
         <div class="tools-grid">
             <a href="clasificacion-urs/index.html" class="tool-card card-crit">
-                <i class="fas fa-file-signature"></i>
+                <i class="fas fa-file-contract"></i>
                 <h2>Gestión URS</h2>
-                <p>Definición de requerimientos técnicos y normativos mandatorios.</p>
+                <p>Clasificación de requerimientos técnicos mandatorios y deseables.</p>
                 <div class="badge">FASE 1</div>
             </a>
 
             <a href="auditoria-iq/index.html" class="tool-card card-blue">
-                <i class="fas fa-microscope"></i>
+                <i class="fas fa-tools"></i>
                 <h2>Auditoría IQ</h2>
-                <p>Inspección física y documental de instalación de equipos.</p>
+                <p>Inspección física y documental de la instalación del activo.</p>
                 <div class="badge badge-alt">INSTALACIÓN</div>
             </a>
 
             <a href="verificacion-oq/index.html" class="tool-card card-new">
-                <i class="fas fa-vials"></i>
+                <i class="fas fa-cogs"></i>
                 <h2>Verificación OQ</h2>
                 <p>Pruebas de funcionalidad y estabilidad térmica en vacío.</p>
                 <div class="badge badge-check">OPERACIÓN</div>
             </a>
 
             <a href="verificacion-pq/index.html" class="tool-card card-new">
-                <i class="fas fa-box-open"></i>
+                <i class="fas fa-boxes"></i>
                 <h2>Verificación PQ</h2>
                 <p>Pruebas de desempeño bajo condiciones de carga real.</p>
                 <div class="badge badge-check">DESEMPEÑO</div>
             </a>
 
             <a href="amef/index.html" class="tool-card card-blue">
-                <i class="fas fa-shield-alt"></i>
+                <i class="fas fa-shield-virus"></i>
                 <h2>AMEF Sistemas</h2>
-                <p>Análisis de fallos en componentes individuales y equipos.</p>
-                <div class="badge badge-alt">ESTÁNDAR</div>
+                <p>Análisis de fallos en componentes y sistemas críticos.</p>
+                <div class="badge badge-alt">RIESGOS</div>
             </a>
 
             <a href="amef-pro/index.html" class="tool-card card-crit">
-                <i class="fas fa-draw-polygon"></i>
+                <i class="fas fa-warehouse"></i>
                 <h2>AMEF Pro (20 Pts)</h2>
-                <p>Mapeo de riesgos masivo con Layout 3D de 6 hileras de racks.</p>
+                <p>Mapeo masivo con Layout 3D de 6 hileras de racks industriales.</p>
                 <div class="badge">AVANZADO</div>
             </a>
 
             <a href="dkd/index.html" class="tool-card card-blue">
-                <i class="fas fa-cube"></i>
+                <i class="fas fa-dice-d20"></i>
                 <h2>DKD-R 5-7</h2>
-                <p>Caracterización de volumen útil de carga y uniformidad.</p>
+                <p>Caracterización de volumen útil y uniformidad térmica.</p>
                 <div class="badge badge-alt">METROLOGÍA</div>
             </a>
 
             <a href="incertidumbre/index.html" class="tool-card card-blue">
-                <i class="fas fa-calculator"></i>
+                <i class="fas fa-chart-area"></i>
                 <h2>Incertidumbre</h2>
                 <p>Presupuesto GUM Dual de Temperatura y Humedad.</p>
                 <div class="badge badge-alt">CÁLCULO</div>
+            </a>
+
+            <a href="examen-final/index.html" class="tool-card card-gold">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Evaluación Final</h2>
+                <p>Examen de competencias, dictamen técnico y envío de resultados.</p>
+                <div class="badge badge-gold">CERTIFICACIÓN</div>
             </a>
         </div>
 
         <footer>
             © 2026 SEVAMETROLOGÍA | Ing. Fabián Durán Valencia | Ciudad de México<br>
-            Flujo de Validación Integral para la Industria Farmacéutica
+            Acreditando Criterios según OMS 961, USP 1079 y NOM-059
         </footer>
     </div>
 
